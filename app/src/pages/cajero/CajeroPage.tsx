@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Navbar } from '../../components/layout/Navbar';
 import { TableCard } from '../../components/cajero/TableCard';
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../../components/ui/dialog';
@@ -90,7 +90,7 @@ const initialTables: TableData[] = [
     { tableNumber: 12, status: 'available', guests: 0, items: [] }
 ];
 
-type DialogView = 'order' | 'payment' | 'processing' | 'success' | 'rejected' | 'cancel-confirm' | 'delete-confirm' | 'receipt' | null;
+type DialogView = 'order' | 'payment' | 'processing' | 'success' | 'cancelled' | 'rejected' | 'cancel-confirm' | 'delete-confirm' | 'receipt' | null;
 
 export default function CajeroPage() {
     const [tables, setTables] = useState<TableData[]>(initialTables);
@@ -200,6 +200,8 @@ export default function CajeroPage() {
         });
     };
 
+    const isProcessingPayment = useRef(false);
+
     const handleSelectPayment = async (method: 'cash' | 'card') => {
         // setPaymentMethod(method);
 
@@ -212,8 +214,12 @@ export default function CajeroPage() {
         } else {
             // Tarjeta - mostrar modal de procesamiento
             setDialogView('processing');
+            isProcessingPayment.current = true;
 
             const result = await simulateCardPayment();
+
+            if (!isProcessingPayment.current) return;
+            isProcessingPayment.current = false;
 
             if (result.success) {
                 setDialogView('success');
@@ -228,11 +234,10 @@ export default function CajeroPage() {
     };
 
     const handleCancelPaymentConfirm = () => {
-        setDialogView(null);
-        setSelectedTable(null);
+        isProcessingPayment.current = false;
         // setPaymentMethod(null);
         setRejectionReason('');
-        toast.info('Pago cancelado');
+        setDialogView('cancelled');
     };
 
     const handleRetryPayment = () => {
@@ -648,6 +653,43 @@ export default function CajeroPage() {
                 </Dialog>
 
                 {/* Dialog de confirmación de cancelar pago */}
+                <Dialog open={dialogView === 'cancelled'} onClose={() => { }} maxWidth="md">
+                    <DialogContent>
+                        <div style={{ padding: '2rem', textAlign: 'center' }}>
+                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                                <div style={{
+                                    backgroundColor: '#fee2e2',
+                                    borderRadius: '50%',
+                                    padding: '1.5rem',
+                                    width: '6rem',
+                                    height: '6rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <span style={{ fontSize: '3rem', color: '#dc2626', fontWeight: '700' }}>✕</span>
+                                </div>
+                            </div>
+                            <h2 style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+                                Pago Cancelado
+                            </h2>
+                            <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+                                La operación ha sido cancelada por el usuario.
+                            </p>
+                            <Button
+                                onClick={() => {
+                                    setDialogView(null);
+                                    setSelectedTable(null);
+                                }}
+                                style={{ width: '100%', backgroundColor: '#dc2626' }}
+                            >
+                                Cerrar
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Dialog de confirmación de cancelar pago */}
                 <Dialog open={dialogView === 'cancel-confirm'} onClose={() => setDialogView('payment')} maxWidth="md">
                     <DialogContent>
                         <div style={{ padding: '1rem', textAlign: 'center' }}>
@@ -762,7 +804,7 @@ export default function CajeroPage() {
                             {/* Logo */}
                             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                                 <img
-                                    src="/logo-rivelez.png"
+                                    src="logo-rivelez.png"
                                     alt="RiVelez"
                                     style={{ width: '120px', height: '120px', margin: '0 auto' }}
                                 />
