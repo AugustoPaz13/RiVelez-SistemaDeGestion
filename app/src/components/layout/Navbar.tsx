@@ -35,7 +35,7 @@ export const Navbar: React.FC = () => {
             {/* Logo y nombre */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <img
-                    src="/logo-rivelez.png"
+                    src="logo-rivelez.png"
                     alt="RiVelez"
                     style={{ width: '40px', height: '40px' }}
                 />

@@ -39,7 +39,7 @@ export default function LoginPage() {
         }}>
             {/* Logo */}
             <img
-                src="/logo-rivelez.png"
+                src="logo-rivelez.png"
                 alt="RiVelez Logo"
                 style={{
                     width: '120px',

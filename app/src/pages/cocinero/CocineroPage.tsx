@@ -25,14 +25,14 @@ const mockOrders: KitchenOrder[] = [
                 id: '1',
                 name: 'Pizza Margarita',
                 quantity: 2,
-                image: '/images/products/pizza-margarita.png',
+                image: 'images/products/pizza-margarita.png',
                 ingredients: [
                     { id: 'ing-001', name: 'Harina', quantityNeeded: 0.5, unit: 'kg' },
                     { id: 'ing-002', name: 'Queso Mozzarella', quantityNeeded: 0.3, unit: 'kg' },
                     { id: 'ing-003', name: 'Salsa de Tomate', quantityNeeded: 0.2, unit: 'L' }
                 ]
             },
-            { id: '2', name: 'Ensalada César', quantity: 1, image: '/images/products/ensalada-cesar.png' }
+            { id: '2', name: 'Ensalada César', quantity: 1, image: 'images/products/ensalada-cesar.png' }
         ]
     },
     {
@@ -43,7 +43,7 @@ const mockOrders: KitchenOrder[] = [
         canBeCancelled: false,
         people: 2,
         items: [
-            { id: '3', name: 'Hamburguesa Clásica', quantity: 1, image: '/images/products/hamburguesa-clasica.png', notes: 'Término medio' }
+            { id: '3', name: 'Hamburguesa Clásica', quantity: 1, image: 'images/products/hamburguesa-clasica.png', notes: 'Término medio' }
         ]
     },
     {
@@ -55,8 +55,8 @@ const mockOrders: KitchenOrder[] = [
         canBeCancelled: false,
         people: 3,
         items: [
-            { id: '4', name: 'Pasta Carbonara', quantity: 2, image: '/images/products/pasta-carbonara.png' },
-            { id: '5', name: 'Risotto de Hongos', quantity: 1, image: '/images/products/risotto-hongos.png' }
+            { id: '4', name: 'Pasta Carbonara', quantity: 2, image: 'images/products/pasta-carbonara.png' },
+            { id: '5', name: 'Risotto de Hongos', quantity: 1, image: 'images/products/risotto-hongos.png' }
         ]
     },
     {
@@ -68,7 +68,7 @@ const mockOrders: KitchenOrder[] = [
         canBeCancelled: false,
         people: 6,
         items: [
-            { id: '6', name: 'Parrillada Mixta', quantity: 1, image: '/images/products/parrillada-mixta.png' }
+            { id: '6', name: 'Parrillada Mixta', quantity: 1, image: 'images/products/parrillada-mixta.png' }
         ]
     },
     {
@@ -81,8 +81,8 @@ const mockOrders: KitchenOrder[] = [
         canBeCancelled: false,
         people: 2,
         items: [
-            { id: '7', name: 'Pizza Margarita', quantity: 1, image: '/images/products/pizza-margarita.png' },
-            { id: '8', name: 'Ensalada César', quantity: 2, image: '/images/products/ensalada-cesar.png' }
+            { id: '7', name: 'Pizza Margarita', quantity: 1, image: 'images/products/pizza-margarita.png' },
+            { id: '8', name: 'Ensalada César', quantity: 2, image: 'images/products/ensalada-cesar.png' }
         ]
     }
 ];
