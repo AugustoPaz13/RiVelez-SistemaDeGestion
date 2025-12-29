@@ -1,9 +1,9 @@
-# Sistema de Gestión de Restaurante (RiVelez)
+# Sistema de Gestión de Restaurante (RiVélez)
 
 **Trabajo Final - Sistemas II**
 **Universidad Nacional de Villa Mercedes (UNViMe)**
-**Carrera:** Analista en Sistemas de Información (o carrera correspondiente)
-**Año:** 2o Año - 2o Cuatrimestre
+**Carrera:** Ingenieria en Sistemas
+**Año:** 2do Año - 2do Cuatrimestre
 
 ---
 
@@ -90,7 +90,7 @@ Para ejecutar el proyecto en su entorno local:
     ```bash
     npm run dev
     ```
-    El sistema estará disponible en `http://localhost:5173`.
+    El sistema estará disponible en `http://localhost`.
 
 5.  **Compilar para producción:**
     ```bash
@@ -121,4 +121,4 @@ El sistema ha sido desarrollado bajo la metodología Mobile First y Desktop Firs
 ---
 
 **Desarrollado por:** Augusto Paz
-**Materia:** Sistemas II
+**Materia:** Sistemas de Información II
