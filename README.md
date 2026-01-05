@@ -13,19 +13,33 @@ Este proyecto consiste en el desarrollo de un **Producto Mínimo Viable (MVP)** 
 
 El objetivo principal es demostrar la arquitectura frontend, la lógica de negocio del lado del cliente, la experiencia de usuario (UX/UI) y la interacción entre diferentes módulos funcionales.
 
-## ⚠️ Alcance del Prototipo (MVP)
+## ⚠️ Estado Actual del Proyecto
 
-Es importante destacar que **esta versión es un prototipo funcional del frontend**.
+### ✅ Completado
+- **Frontend:** React con TypeScript, Material-UI, y navegación por roles.
+- **Backend:** Spring Boot con API RESTful, Spring Security y Spring Data JPA.
+- **Base de Datos:** MySQL con esquema completo (usuarios, productos, mesas, pedidos, stock, promociones).
+- **Autenticación JWT:** Login funcional con tokens JWT y BCrypt para contraseñas.
+- **Datos Demo:** Carga automática de usuarios, productos y stock al iniciar el backend.
 
-- **Frontend:** Desarrollado completamente en React con TypeScript, implementando lógica robusta de cliente, manejo de estado y validaciones.
-- **Backend & Base de Datos:** **Pendiente de implementación**. Actualmente, el sistema utiliza **datos simulados (mock data)** y **almacenamiento local (localStorage)** para persistir el estado durante la sesión.
-- **Persistencia:** Al no contar con una base de datos real (SQL/NoSQL) conectada, los cambios pueden perderse si se limpia la caché del navegador o se reinicia el entorno de desarrollo.
+### ⏳ Pendiente
+- **Integración de Datos:** Conectar las páginas del frontend (productos, stock, mesas) con los endpoints del backend. Actualmente usan datos mock locales.
 
-### � Próximos Pasos (Hoja de Ruta)
-Para convertir este MVP en un producto de producción, se requiere:
-1.  **Desarrollo de API RESTful:** Implementación de un backend (Node.js/Express, Python/Django, o similar) para procesar la lógica de negocio en el servidor.
-2.  **Integración de Base de Datos:** Migración de los datos mock a una base de datos relacional (PostgreSQL/MySQL) para asegurar la integridad y persistencia de la información.
-3.  **Autenticación JWT:** Reemplazar el login simulado por un sistema seguro de tokens.
+### 🚀 Para ejecutar el sistema completo:
+
+**Terminal 1 - Backend:**
+```bash
+cd backend
+.\mvnw.cmd spring-boot:run
+```
+
+**Terminal 2 - Frontend:**
+```bash
+cd app
+npm run dev
+```
+
+Acceder a `http://localhost:3000` y usar las credenciales de demo.
 
 ---
 

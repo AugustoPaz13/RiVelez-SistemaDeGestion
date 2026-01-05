@@ -2,13 +2,14 @@
 export type UserRole = 'gerente' | 'cajero' | 'cocinero' | 'cliente';
 
 export interface User {
-    id: string;
+    id: number;
     username: string;
-    password: string;
+    password?: string;
     role: UserRole;
     nombre: string;
     activo: boolean;
     fechaCreacion?: string;
+    token?: string;
 }
 
 export interface AuthState {
@@ -19,4 +20,12 @@ export interface AuthState {
 export interface LoginCredentials {
     username: string;
     password: string;
+}
+
+export interface AuthResponse {
+    token: string;
+    username: string;
+    nombre: string;
+    role: UserRole;
+    message: string;
 }

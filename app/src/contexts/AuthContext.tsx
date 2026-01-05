@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AuthState, LoginCredentials } from '../types';
-import { mockUsers } from '../data';
+// import { mockUsers } from '../data'; // Eliminado
+import { authService } from '../services/authService';
 
 interface AuthContextType {
     authState: AuthState;
@@ -39,26 +40,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const login = async (credentials: LoginCredentials): Promise<boolean> => {
         setIsLoading(true);
 
-        // Simular delay de red
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Buscar usuario en mock data
-        const user = mockUsers.find(
-            u => u.username === credentials.username &&
-                u.password === credentials.password &&
-                u.activo
-        );
-
-        if (user) {
-            // Guardar en estado y localStorage
-            const userWithoutPassword = { ...user, password: '' };
-            setAuthState({
-                user: userWithoutPassword,
-                isAuthenticated: true,
-            });
-            localStorage.setItem('rivelez_user', JSON.stringify(userWithoutPassword));
-            setIsLoading(false);
-            return true;
+        try {
+            const user = await authService.login(credentials);
+            if (user) {
+                setAuthState({
+                    user,
+                    isAuthenticated: true,
+                });
+                localStorage.setItem('rivelez_user', JSON.stringify(user));
+                setIsLoading(false);
+                return true;
+            }
+        } catch (error) {
+            console.error("Login error", error);
         }
 
         setIsLoading(false);
