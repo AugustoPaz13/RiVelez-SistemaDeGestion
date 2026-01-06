@@ -30,11 +30,7 @@ interface OrderDTO {
     fechaActualizacion: string;
 }
 
-interface CreateOrderRequest {
-    numeroMesa: number;
-    personas: number;
-    items: { productoId: number; cantidad: number; observaciones?: string }[];
-}
+
 
 // Mapeo de backend a frontend
 const mapOrderDTOToOrder = (dto: OrderDTO): Order => ({

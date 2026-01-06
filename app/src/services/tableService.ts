@@ -16,9 +16,10 @@ interface TableDTO {
 const mapTableDTOToTable = (dto: TableDTO): Table => {
     // Mapear estado de mayúsculas a minúsculas
     const statusMap: Record<string, TableStatus> = {
-        'AVAILABLE': 'available',
-        'OCCUPIED': 'occupied',
-        'RESERVED': 'reserved',
+        'AVAILABLE': 'disponible',
+        'OCCUPIED': 'ocupada',
+        'RESERVED': 'reservada',
+        'PAGADA': 'pagada',
     };
 
     return {

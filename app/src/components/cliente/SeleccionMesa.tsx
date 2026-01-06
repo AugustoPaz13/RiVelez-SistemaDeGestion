@@ -1,5 +1,5 @@
 import { Users, RefreshCw } from 'lucide-react';
-import { Mesa } from '../../types/restaurant';
+import { Mesa } from '../../types/restaurant.types';
 
 interface SeleccionMesaProps {
   mesas: Mesa[];

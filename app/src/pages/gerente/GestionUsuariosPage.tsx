@@ -81,13 +81,13 @@ export default function GestionUsuariosPage() {
         setShowDialog(false);
     };
 
-    const handleToggleStatus = (userId: string) => {
+    const handleToggleStatus = (userId: string | number) => {
         setUsers(users.map(u =>
             u.id === userId ? { ...u, activo: !u.activo } : u
         ));
     };
 
-    const handleDelete = (userId: string) => {
+    const handleDelete = (userId: string | number) => {
         if (confirm('¿Está seguro de eliminar este usuario?')) {
             setUsers(users.filter(u => u.id !== userId));
         }

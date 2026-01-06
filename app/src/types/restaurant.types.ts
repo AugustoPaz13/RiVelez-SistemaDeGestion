@@ -1,7 +1,7 @@
 // Tipos de negocio del restaurante
 
 // Estados de mesa
-export type TableStatus = 'available' | 'occupied' | 'reserved' | 'pagada';
+export type TableStatus = 'disponible' | 'ocupada' | 'reservada' | 'pagada';
 
 // Estados de pedido
 export type OrderStatus = 'nuevo' | 'recibido' | 'en-preparacion' | 'listo' | 'entregado' | 'pagado' | 'retrasado' | 'cancelado';
@@ -42,6 +42,7 @@ export interface Order {
 }
 
 // Mesa
+export type Mesa = Table;
 export interface Table {
     id: number;
     numero: number;

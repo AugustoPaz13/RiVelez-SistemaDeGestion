@@ -432,7 +432,10 @@ export default function GestionMenuPage() {
                         </div>
 
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                            <Button onClick={handleSave} style={{ flex: 1 }}>Guardar</Button>
+                            <Button onClick={handleSave} style={{ flex: 1 }} disabled={saving}>
+                                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Guardar
+                            </Button>
                             <Button onClick={() => setShowDialog(false)} variant="outline" style={{ flex: 1 }}>Cancelar</Button>
                         </div>
                     </div>

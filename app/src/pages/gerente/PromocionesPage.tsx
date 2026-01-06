@@ -168,8 +168,15 @@ export default function PromocionesPage() {
                         </h1>
                         <p style={{ color: 'rgba(255,255,255,0.8)' }}>
                             Configuración de descuentos y reglas de promociones
+                            {loading && <Loader2 className="ml-4 h-6 w-6 animate-spin text-white inline" />}
                         </p>
                     </div>
+
+                    {error && (
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                            <span className="block sm:inline">{error}</span>
+                        </div>
+                    )}
 
                     {/* Botón agregar */}
                     <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
@@ -437,7 +444,10 @@ export default function PromocionesPage() {
                         </div>
 
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                            <Button onClick={handleSave} style={{ flex: 1 }}>Guardar</Button>
+                            <Button onClick={handleSave} style={{ flex: 1 }} disabled={saving}>
+                                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Guardar
+                            </Button>
                             <Button onClick={() => setShowDialog(false)} variant="outline" style={{ flex: 1 }}>Cancelar</Button>
                         </div>
                     </div>

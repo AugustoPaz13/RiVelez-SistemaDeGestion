@@ -146,14 +146,15 @@ export default function CocineroPage() {
         if (cancelledOrderNotification) {
             try {
                 // Llamar al backend para eliminar definitivamente (dismiss)
-                if (cancelledOrderNotification._originalId) {
-                    await orderService.dismiss(cancelledOrderNotification._originalId);
+                // Llamar al backend para eliminar definitivamente (dismiss)
+                if ((cancelledOrderNotification as any)._originalId) {
+                    await orderService.dismiss((cancelledOrderNotification as any)._originalId);
                 }
                 setCancelledOrderNotification(null);
                 fetchOrders(); // Recargar para que desaparezca
                 toast.info('Notificación de cancelación descartada');
-            } catch (error) {
-                console.error('Error al descartar cancelación:', error);
+            } catch (_error) {
+                console.error('Error al descartar cancelación:', _error);
                 toast.error('Error al descartar notificación');
             }
         }

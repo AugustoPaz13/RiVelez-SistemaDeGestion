@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle2, Clock, ChefHat, AlertCircle, X, ShoppingBag, CreditCard, Banknote, Smartphone, QrCode, LogOut } from 'lucide-react';
+import { CheckCircle2, Clock, ChefHat, AlertCircle, X, ShoppingBag, LogOut, Banknote, CreditCard, Smartphone, QrCode } from 'lucide-react';
 import { ItemCarrito, MetodoPago } from '../../types/restaurant';
 import { orderService } from '../../services/orderService';
 import { toast } from 'sonner';
@@ -10,7 +10,6 @@ interface EstadoPedidoProps {
     items: ItemCarrito[];
     total: number;
     fechaCreacionPedido?: string;
-    onVolverAlInicio: () => void;
     onVolverAlMenu?: () => void;
     onLiberarMesa?: () => void;
 }
@@ -18,7 +17,7 @@ interface EstadoPedidoProps {
 type EstadoPedidoType = 'nuevo' | 'recibido' | 'en-preparacion' | 'listo' | 'entregado' | 'pagado' | 'retrasado';
 type FaseType = 'cancelacion' | 'seguimiento';
 
-export function EstadoPedido({ orderId, numeroMesa, items, total, fechaCreacionPedido, onVolverAlInicio, onVolverAlMenu, onLiberarMesa }: EstadoPedidoProps) {
+export function EstadoPedido({ orderId, numeroMesa, items, total, fechaCreacionPedido, onVolverAlMenu, onLiberarMesa }: EstadoPedidoProps) {
     const [estado, setEstado] = useState<EstadoPedidoType>('nuevo');
     const [fase, setFase] = useState<FaseType>('cancelacion');
     const [showCancelDialog, setShowCancelDialog] = useState(false);

@@ -2,7 +2,7 @@
 export type UserRole = 'gerente' | 'cajero' | 'cocinero' | 'cliente';
 
 export interface User {
-    id: number;
+    id: number | string;
     username: string;
     password?: string;
     role: UserRole;

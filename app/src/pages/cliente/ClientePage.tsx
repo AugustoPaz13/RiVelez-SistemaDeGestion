@@ -4,7 +4,8 @@ import { SeleccionMesa } from '../../components/cliente/SeleccionMesa';
 import { MenuDigital } from '../../components/cliente/MenuDigital';
 import { RevisarPedido } from '../../components/cliente/RevisarPedido';
 import { EstadoPedido } from '../../components/cliente/EstadoPedido';
-import { ItemCarrito, Producto, Mesa } from '../../types/restaurant';
+import { ItemCarrito, Producto } from '../../types/restaurant'; // Kept these as they are used
+import { Mesa } from '../../types/restaurant.types'; // Changed this line as per instruction
 import { toast, Toaster } from '../../components/ui/sonner';
 import { tableService } from '../../services/tableService';
 import { productService } from '../../services/productService';
@@ -46,14 +47,8 @@ export default function ClientePage() {
                     productService.getAvailable(),
                 ]);
 
-                // Mapear a formato esperado por componentes
-                setMesas(tablesData.map(t => ({
-                    id: t.numero,
-                    numero: t.numero,
-                    capacidad: t.capacidad,
-                    estado: t.estado === 'available' ? 'disponible' :
-                        t.estado === 'occupied' ? 'ocupada' : 'reservada',
-                })));
+                // Mapear a formato esperado por componentes (ya viene en español del servicio)
+                setMesas(tablesData);
 
                 setProductos(productsData.map(p => ({
                     id: parseInt(p.id),
@@ -261,9 +256,11 @@ export default function ClientePage() {
                     items={carrito}
                     total={calcularTotal()}
                     fechaCreacionPedido={fechaCreacionPedido}
-                    onVolverAlInicio={handleVolverAMesas}
                     onVolverAlMenu={handleVolverAlMenu}
-                    onLiberarMesa={handleReleaseTable}
+                    onLiberarMesa={async () => {
+                        await handleReleaseTable();
+                        handleVolverAlMenu();
+                    }}
                 />
             )}
 

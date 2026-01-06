@@ -96,7 +96,13 @@ export default function ControlStockPage() {
                         <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: 'white' }}>
                             <Package style={{ display: 'inline', width: '2rem', height: '2rem', marginRight: '0.5rem' }} />
                             G3: Controlar Stock
+                            {loading && <Loader2 className="ml-4 h-6 w-6 animate-spin text-white inline" />}
                         </h1>
+                        {error && (
+                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                                <span className="block sm:inline">{error}</span>
+                            </div>
+                        )}
                         <p style={{ color: 'rgba(255,255,255,0.8)' }}>
                             Registro de entradas, salidas y alertas de inventario
                         </p>
@@ -290,7 +296,10 @@ export default function ControlStockPage() {
                         </div>
 
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                            <Button onClick={handleSave} style={{ flex: 1 }}>Guardar</Button>
+                            <Button onClick={handleSave} style={{ flex: 1 }} disabled={saving}>
+                                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Guardar
+                            </Button>
                             <Button onClick={() => setShowDialog(false)} variant="outline" style={{ flex: 1 }}>Cancelar</Button>
                         </div>
                     </div>
