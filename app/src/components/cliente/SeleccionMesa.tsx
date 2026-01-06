@@ -62,6 +62,10 @@ export function SeleccionMesa({ mesas, onSeleccionarMesa, onActualizar }: Selecc
               <span style={{ color: '#374151', fontSize: '0.875rem' }}>{mesas.filter(m => m.estado === 'ocupada').length} Ocupadas</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ width: '1rem', height: '1rem', backgroundColor: '#8b5cf6', borderRadius: '0.25rem' }}></div>
+              <span style={{ color: '#374151', fontSize: '0.875rem' }}>{mesas.filter(m => m.estado === 'pagada').length} Pagadas</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <div style={{ width: '1rem', height: '1rem', backgroundColor: '#f59e0b', borderRadius: '0.25rem' }}></div>
               <span style={{ color: '#374151', fontSize: '0.875rem' }}>{mesas.filter(m => m.estado === 'reservada').length} Reservadas</span>
             </div>
@@ -109,8 +113,9 @@ export function SeleccionMesa({ mesas, onSeleccionarMesa, onActualizar }: Selecc
         }}>
           {mesas.map((mesa) => {
             const isDisponible = mesa.estado === 'disponible';
-            const bgColor = isDisponible ? '#ffffff' : mesa.estado === 'ocupada' ? '#dbeafe' : '#fef3c7';
-            const borderColor = isDisponible ? '#10b981' : '#d1d5db';
+            const isPagada = mesa.estado === 'pagada';
+            const bgColor = isDisponible ? '#ffffff' : isPagada ? '#f3e8ff' : mesa.estado === 'ocupada' ? '#dbeafe' : '#fef3c7';
+            const borderColor = isDisponible ? '#10b981' : isPagada ? '#a78bfa' : '#d1d5db';
 
             return (
               <button
@@ -152,13 +157,14 @@ export function SeleccionMesa({ mesas, onSeleccionarMesa, onActualizar }: Selecc
                     padding: '0.25rem 0.75rem',
                     borderRadius: '9999px',
                     color: 'white',
-                    backgroundColor: mesa.estado === 'disponible' ? '#10b981' : mesa.estado === 'ocupada' ? '#ef4444' : '#f59e0b',
+                    backgroundColor: mesa.estado === 'disponible' ? '#10b981' : mesa.estado === 'ocupada' ? '#ef4444' : mesa.estado === 'pagada' ? '#8b5cf6' : '#f59e0b',
                     fontSize: '0.75rem',
                     fontWeight: '600'
                   }}>
                     {mesa.estado === 'disponible' ? 'Disponible' :
                       mesa.estado === 'ocupada' ? 'Ocupada' :
-                        'Reservada'}
+                        mesa.estado === 'pagada' ? 'Pagada' :
+                          'Reservada'}
                   </div>
                 </div>
               </button>

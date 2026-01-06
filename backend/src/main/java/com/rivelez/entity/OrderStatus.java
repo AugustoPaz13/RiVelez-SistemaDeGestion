@@ -11,6 +11,8 @@ public enum OrderStatus {
     EN_PREPARACION, // Cocinando
     LISTO, // Listo para servir
     ENTREGADO, // Entregado al cliente
+    RETRASADO, // Pedido demorado
+    CANCELADO, // Cancelado por cliente
     PAGADO; // Pagado y cerrado
 
     @JsonValue

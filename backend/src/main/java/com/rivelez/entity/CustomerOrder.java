@@ -56,6 +56,16 @@ public class CustomerOrder {
     @Column(name = "metodo_pago")
     private PaymentMethod metodoPago;
 
+    // Campo para indicar que el cliente está listo para pagar
+    @Column(name = "listo_para_pagar")
+    private Boolean listoParaPagar = false;
+
+    // Campo para guardar el método de pago que el cliente eligió (antes de que el
+    // cajero procese)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "metodo_pago_solicitado")
+    private PaymentMethod metodoPagoSolicitado;
+
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
 

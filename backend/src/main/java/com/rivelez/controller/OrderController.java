@@ -168,14 +168,46 @@ public class OrderController {
     }
 
     /**
+     * Marcar pedido como listo para pagar (cliente eligió método de pago)
+     * POST /api/orders/{id}/ready-to-pay
+     */
+    @PostMapping("/{id}/ready-to-pay")
+    public ResponseEntity<?> markReadyToPay(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        try {
+            PaymentMethod metodoPago = PaymentMethod.valueOf(body.get("metodoPago"));
+            return ResponseEntity.ok(orderService.markReadyToPay(id, metodoPago));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
      * Cancelar pedido
      * DELETE /api/orders/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('GERENTE', 'CAJERO')")
+    // @PreAuthorize("hasAnyRole('GERENTE', 'CAJERO')") - Permitir anónimo para que
+    // cliente cancele
     public ResponseEntity<?> cancelOrder(@PathVariable Long id) {
         try {
             orderService.cancelOrder(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Descartar (dismiss) pedido cancelado - Acción de Cocina
+     * DELETE /api/orders/{id}/dismiss
+     */
+    @DeleteMapping("/{id}/dismiss")
+    @PreAuthorize("hasAnyRole('GERENTE', 'COCINERO')")
+    public ResponseEntity<?> dismissOrder(@PathVariable Long id) {
+        try {
+            orderService.dismissCancellation(id);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

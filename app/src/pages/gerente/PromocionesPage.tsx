@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from '../../components/layout/Navbar';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../../components/ui/dialog';
-import { Tag, Plus, Edit, Trash2, Calendar } from 'lucide-react';
+import { Tag, Plus, Edit, Trash2, Calendar, Loader2 } from 'lucide-react';
+import { promotionService } from '../../services/promotionService';
 
 interface Promotion {
     id: string;
@@ -23,38 +24,13 @@ interface Promotion {
     horaFin?: string;
 }
 
-const initialPromotions: Promotion[] = [
-    {
-        id: '1',
-        nombre: '20% en Pizzas',
-        tipo: 'porcentaje',
-        valor: 20,
-        alcance: 'categoria',
-        categoriaId: 'pizzas',
-        fechaInicio: '2025-12-01',
-        fechaFin: '2025-12-31',
-        activo: true,
-        diasSemana: [1, 2, 3, 4, 5], // Lunes a Viernes
-    },
-    {
-        id: '2',
-        nombre: 'Happy Hour',
-        tipo: 'porcentaje',
-        valor: 30,
-        alcance: 'categoria',
-        categoriaId: 'bebidas',
-        fechaInicio: '2025-12-01',
-        fechaFin: '2025-12-31',
-        activo: true,
-        horaInicio: '17:00',
-        horaFin: '19:00',
-    },
-];
-
 export default function PromocionesPage() {
-    const [promotions, setPromotions] = useState<Promotion[]>(initialPromotions);
+    const [promotions, setPromotions] = useState<Promotion[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [showDialog, setShowDialog] = useState(false);
     const [editingPromotion, setEditingPromotion] = useState<Promotion | null>(null);
+    const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({
         nombre: '',
         tipo: 'porcentaje' as Promotion['tipo'],
@@ -64,6 +40,24 @@ export default function PromocionesPage() {
         fechaFin: '',
         activo: true,
     });
+
+    useEffect(() => {
+        loadPromotions();
+    }, []);
+
+    const loadPromotions = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const data = await promotionService.getAll();
+            setPromotions(data);
+        } catch (err) {
+            console.error('Error cargando promociones:', err);
+            setError('Error al cargar las promociones. Verifique que el servidor esté funcionando.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleAdd = () => {
         setEditingPromotion(null);
@@ -93,35 +87,52 @@ export default function PromocionesPage() {
         setShowDialog(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!formData.nombre || formData.valor <= 0) {
             alert('Complete los campos requeridos');
             return;
         }
 
         if (editingPromotion) {
+            // Edición no soportada en backend por ahora - solo local
             setPromotions(promotions.map(p =>
                 p.id === editingPromotion.id ? { ...p, ...formData } : p
             ));
+            setShowDialog(false);
         } else {
-            const newPromotion: Promotion = {
-                id: String(Date.now()),
-                ...formData,
-            };
-            setPromotions([...promotions, newPromotion]);
+            try {
+                setSaving(true);
+                const created = await promotionService.create(formData);
+                setPromotions([...promotions, created]);
+                setShowDialog(false);
+            } catch (err) {
+                console.error('Error creando promoción:', err);
+                alert('Error al crear la promoción');
+            } finally {
+                setSaving(false);
+            }
         }
-        setShowDialog(false);
     };
 
-    const handleToggleStatus = (id: string) => {
-        setPromotions(promotions.map(p =>
-            p.id === id ? { ...p, activo: !p.activo } : p
-        ));
+    const handleToggleStatus = async (id: string) => {
+        try {
+            const updated = await promotionService.toggle(id);
+            setPromotions(promotions.map(p => p.id === id ? updated : p));
+        } catch (err) {
+            console.error('Error cambiando estado:', err);
+            alert('Error al cambiar el estado');
+        }
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (confirm('¿Está seguro de eliminar esta promoción?')) {
-            setPromotions(promotions.filter(p => p.id !== id));
+            try {
+                await promotionService.delete(id);
+                setPromotions(promotions.filter(p => p.id !== id));
+            } catch (err) {
+                console.error('Error eliminando promoción:', err);
+                alert('Error al eliminar');
+            }
         }
     };
 

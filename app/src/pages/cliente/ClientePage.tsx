@@ -3,19 +3,24 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { SeleccionMesa } from '../../components/cliente/SeleccionMesa';
 import { MenuDigital } from '../../components/cliente/MenuDigital';
 import { RevisarPedido } from '../../components/cliente/RevisarPedido';
-import { PantallaPago } from '../../components/cliente/PantallaPago';
-import { Comprobante } from '../../components/cliente/Comprobante';
 import { EstadoPedido } from '../../components/cliente/EstadoPedido';
-import { mesasData, productosData } from '../../data/mockData';
-import { ItemCarrito, Producto } from '../../types/restaurant';
+import { ItemCarrito, Producto, Mesa } from '../../types/restaurant';
 import { toast, Toaster } from '../../components/ui/sonner';
+import { tableService } from '../../services/tableService';
+import { productService } from '../../services/productService';
+import { orderService } from '../../services/orderService';
 
-type Pantalla = 'seleccion-mesa' | 'menu' | 'revisar-pedido' | 'pago' | 'estado-pedido' | 'comprobante';
+type Pantalla = 'seleccion-mesa' | 'menu' | 'revisar-pedido' | 'estado-pedido';
 
 export default function ClientePage() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const mesaParam = searchParams.get('mesa');
+
+    // Data from API
+    const [mesas, setMesas] = useState<Mesa[]>([]);
+    const [productos, setProductos] = useState<Producto[]>([]);
+    const [loading, setLoading] = useState(true);
 
     // Si viene mesa por QR, saltar directo al menú
     const [pantallaActual, setPantallaActual] = useState<Pantalla>(
@@ -27,13 +32,50 @@ export default function ClientePage() {
     );
 
     const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
-    // const [pedidoConfirmado, setPedidoConfirmado] = useState(false);
-    // const [pedidoEnviado, setPedidoEnviado] = useState<Date | null>(null);
-    const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<string>('');
+    // const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<string>(''); // Removed unused state
+    const [currentOrderId, setCurrentOrderId] = useState<string>('');
+    const [fechaCreacionPedido, setFechaCreacionPedido] = useState<string>('');
+
+    // Cargar datos del backend
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                setLoading(true);
+                const [tablesData, productsData] = await Promise.all([
+                    tableService.getAll(),
+                    productService.getAvailable(),
+                ]);
+
+                // Mapear a formato esperado por componentes
+                setMesas(tablesData.map(t => ({
+                    id: t.numero,
+                    numero: t.numero,
+                    capacidad: t.capacidad,
+                    estado: t.estado === 'available' ? 'disponible' :
+                        t.estado === 'occupied' ? 'ocupada' : 'reservada',
+                })));
+
+                setProductos(productsData.map(p => ({
+                    id: parseInt(p.id),
+                    nombre: p.nombre,
+                    descripcion: p.descripcion || '',
+                    precio: p.precio,
+                    categoria: p.categoria,
+                    imagen: p.imagen,
+                })));
+            } catch (err) {
+                console.error('Error cargando datos:', err);
+                toast.error('Error al cargar datos del servidor');
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
 
     // Validar mesa del QR
     useEffect(() => {
-        if (mesaParam) {
+        if (mesaParam && mesas.length > 0) {
             const mesaNum = parseInt(mesaParam);
 
             // Validar que sea un número válido
@@ -44,7 +86,7 @@ export default function ClientePage() {
             }
 
             // Validar que la mesa exista
-            const mesaExiste = mesasData.find(m => m.numero === mesaNum);
+            const mesaExiste = mesas.find(m => m.numero === mesaNum);
             if (!mesaExiste) {
                 toast.error(`Mesa ${mesaNum} no encontrada`);
                 navigate('/cliente');
@@ -55,7 +97,7 @@ export default function ClientePage() {
             setPantallaActual('menu');
             toast.success(`Bienvenido a Mesa ${mesaNum}`);
         }
-    }, [mesaParam, navigate]);
+    }, [mesaParam, navigate, mesas]);
 
     // Handlers para Selección de Mesa
     const handleSeleccionarMesa = (numeroMesa: number) => {
@@ -124,23 +166,33 @@ export default function ClientePage() {
         setCarrito(prev => prev.filter(item => item.producto.id !== productoId));
     };
 
-    const handleConfirmarPedido = () => {
-        // setPedidoConfirmado(true);
-        // setPedidoEnviado(new Date()); // Guardar timestamp para countdown
-        setPantallaActual('pago');
-        console.log('Pedido enviado a la cocina:', carrito);
-        toast.success('Pedido enviado a cocina');
+    const handleConfirmarPedido = async () => {
+        if (!mesaSeleccionada) return;
+
+        try {
+            // Crear orden en el backend
+            const newOrder = await orderService.create({
+                numeroMesa: mesaSeleccionada,
+                personas: 1, // Default, podría pedirse
+                items: carrito.map(item => ({
+                    productoId: item.producto.id,
+                    cantidad: item.cantidad,
+                    observaciones: ''
+                }))
+            });
+
+            setCurrentOrderId(newOrder.id);
+            setFechaCreacionPedido(newOrder.fechaCreacion); // Guardar fecha de creación
+            setPantallaActual('estado-pedido'); // Ir directo al seguimiento
+            console.log('Pedido creado:', newOrder);
+            toast.success('Pedido enviado a cocina');
+        } catch (error) {
+            console.error('Error al crear pedido:', error);
+            toast.error('Error al enviar el pedido. Intente nuevamente.');
+        }
     };
 
-    // Handlers para Pago
-    const handleVolverAPedido = () => {
-        setPantallaActual('revisar-pedido');
-    };
 
-    const handlePagoExitoso = (metodoPago: string) => {
-        setMetodoPagoSeleccionado(metodoPago);
-        setPantallaActual('estado-pedido'); // Cambiado: va a seguimiento en vez de comprobante
-    };
 
     // Calcular total
     const calcularTotal = () => {
@@ -149,20 +201,33 @@ export default function ClientePage() {
         return subtotal + propina;
     };
 
+    // Handler para Liberar Mesa
+    const handleReleaseTable = async () => {
+        if (!mesaSeleccionada) return;
+        try {
+            await tableService.releaseTable(mesaSeleccionada);
+            toast.success('Gracias por su visita. Mesa liberada.');
+            handleVolverAMesas();
+        } catch (error) {
+            console.error('Error al liberar mesa:', error);
+            toast.error('Error al liberar la mesa');
+        }
+    };
+
     return (
         <>
             <Toaster />
-            {pantallaActual === 'seleccion-mesa' && (
+            {pantallaActual === 'seleccion-mesa' && !loading && (
                 <SeleccionMesa
-                    mesas={mesasData}
+                    mesas={mesas}
                     onSeleccionarMesa={handleSeleccionarMesa}
                     onActualizar={handleActualizarMesas}
                 />
             )}
 
-            {pantallaActual === 'menu' && mesaSeleccionada !== null && (
+            {pantallaActual === 'menu' && mesaSeleccionada !== null && !loading && (
                 <MenuDigital
-                    productos={productosData}
+                    productos={productos}
                     carrito={carrito}
                     onAgregarAlCarrito={handleAgregarAlCarrito}
                     onRemoverDelCarrito={handleRemoverDelCarrito}
@@ -187,34 +252,22 @@ export default function ClientePage() {
                 />
             )}
 
-            {pantallaActual === 'pago' && mesaSeleccionada !== null && (
-                <PantallaPago
-                    total={calcularTotal()}
-                    numeroMesa={mesaSeleccionada}
-                    onVolverAPedido={handleVolverAPedido}
-                    onPagoExitoso={handlePagoExitoso}
-                />
-            )}
+
 
             {pantallaActual === 'estado-pedido' && mesaSeleccionada !== null && (
                 <EstadoPedido
+                    orderId={currentOrderId}
                     numeroMesa={mesaSeleccionada}
                     items={carrito}
                     total={calcularTotal()}
-                    metodoPago={metodoPagoSeleccionado}
+                    fechaCreacionPedido={fechaCreacionPedido}
                     onVolverAlInicio={handleVolverAMesas}
+                    onVolverAlMenu={handleVolverAlMenu}
+                    onLiberarMesa={handleReleaseTable}
                 />
             )}
 
-            {pantallaActual === 'comprobante' && mesaSeleccionada !== null && (
-                <Comprobante
-                    numeroMesa={mesaSeleccionada}
-                    items={carrito}
-                    total={calcularTotal()}
-                    metodoPago={metodoPagoSeleccionado}
-                    onVolverAlInicio={handleVolverAMesas}
-                />
-            )}
+
         </>
     );
 }

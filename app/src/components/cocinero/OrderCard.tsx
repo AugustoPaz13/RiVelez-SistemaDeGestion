@@ -21,7 +21,7 @@ export interface OrderItem {
 export interface KitchenOrder {
     id: string;
     tableNumber: number;
-    status: 'nuevo' | 'en-preparacion' | 'listo' | 'retrasado';
+    status: 'nuevo' | 'en-preparacion' | 'listo' | 'retrasado' | 'cancelado';
     items: OrderItem[];
     receivedAt: string;
     startedAt?: string;
@@ -71,6 +71,14 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
                 borderColor: '#f59e0b',
                 badgeBg: '#fef3c7',
                 badgeText: '#92400e'
+            },
+            'cancelado': {
+                label: 'Cancelado',
+                color: '#ef4444',
+                bgColor: '#fee2e2',
+                borderColor: '#ef4444',
+                badgeBg: '#fecaca',
+                badgeText: '#7f1d1d'
             }
         };
         return configs[status as keyof typeof configs] || configs.nuevo;

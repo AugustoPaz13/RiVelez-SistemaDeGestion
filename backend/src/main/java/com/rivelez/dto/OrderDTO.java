@@ -30,6 +30,8 @@ public class OrderDTO {
     private BigDecimal propina;
     private BigDecimal total;
     private PaymentMethod metodoPago;
+    private Boolean listoParaPagar;
+    private PaymentMethod metodoPagoSolicitado;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
 }

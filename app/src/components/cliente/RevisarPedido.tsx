@@ -101,9 +101,9 @@ export function RevisarPedido({
 
                     <button
                       onClick={() => onEliminarItem(item.producto.id)}
-                      style={{ padding: '0.5rem', color: '#ef4444', borderRadius: '0.5rem', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', transition: 'background-color 0.2s' }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fee2e2'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      style={{ padding: '0.5rem', color: '#ef4444', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', transition: 'transform 0.2s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                     >
                       <Trash2 style={{ width: '1.25rem', height: '1.25rem' }} />
                     </button>

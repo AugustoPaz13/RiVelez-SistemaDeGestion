@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.Customizer;
 
 /**
  * Configuración de Spring Security
@@ -34,6 +35,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints públicos
@@ -45,10 +47,17 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/products/**").permitAll()
                         // Endpoints de mesas (lectura pública)
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/tables/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/tables/*/release").permitAll()
                         // Endpoints para pedidos de clientes
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/orders").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/orders/table/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/orders/numero/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/orders/*").permitAll() // Permitir
+                                                                                                                  // cancelación
+                                                                                                                  // por
+                                                                                                                  // cliente
+                                                                                                                  // (soft
+                                                                                                                  // delete)
                         // Endpoints de promociones (lectura pública de activas)
                         .requestMatchers("/api/promotions/active").permitAll()
                         // Endpoints protegidos por rol

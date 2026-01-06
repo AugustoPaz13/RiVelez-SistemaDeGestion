@@ -117,6 +117,19 @@ public class TableController {
     }
 
     /**
+     * Liberar mesa (Cliente)
+     * POST /api/tables/{id}/release
+     */
+    @PostMapping("/{id}/release")
+    public ResponseEntity<?> releaseTable(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(tableService.updateTableStatus(id, TableStatus.AVAILABLE, null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
      * Eliminar mesa
      * DELETE /api/tables/{id}
      */

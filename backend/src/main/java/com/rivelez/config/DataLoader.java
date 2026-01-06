@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Carga datos iniciales en la base de datos al arrancar la aplicación
@@ -25,6 +26,7 @@ public class DataLoader implements CommandLineRunner {
         private final StockItemRepository stockItemRepository;
         private final StockMovementRepository stockMovementRepository;
         private final PromotionRepository promotionRepository;
+        private final OrderRepository orderRepository;
         private final PasswordEncoder passwordEncoder;
 
         @Override
@@ -34,6 +36,7 @@ public class DataLoader implements CommandLineRunner {
                 loadProducts();
                 loadStock();
                 loadPromotions();
+                loadOrders();
         }
 
         private void loadUsers() {
@@ -101,48 +104,73 @@ public class DataLoader implements CommandLineRunner {
 
                         // Entradas
                         saveProduct("Empanadas (x3)", "Empanadas caseras de carne cortada a cuchillo", "3500",
-                                        ProductCategory.ENTRADA);
+                                        ProductCategory.ENTRADA,
+                                        "https://cuk-it.com/wp-content/uploads/2024/05/empanadas-carne-cuchillo-thumb.webp");
                         saveProduct("Provoleta", "Queso provolone a la parrilla con orégano", "4200",
-                                        ProductCategory.ENTRADA);
+                                        ProductCategory.ENTRADA,
+                                        "https://www.los-almendros.com.ar/shop/wp-content/uploads/Receta-recetas-locos-x-la-parrilla-locosxlaparrilla-receta-provoleta-parrilla-provoleta-parrilla-receta-provoleta-provoleta-752x477-1.jpg");
                         saveProduct("Tabla de Fiambres", "Selección de jamón, queso y aceitunas", "5500",
-                                        ProductCategory.ENTRADA);
+                                        ProductCategory.ENTRADA,
+                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYAIC1sSogmPPvaV0rF_NLhgyELN1CPOvTGw&s");
 
                         // Platos Principales
                         saveProduct("Bife de Chorizo", "Corte premium de 400g con guarnición a elección", "12500",
-                                        ProductCategory.PRINCIPAL);
+                                        ProductCategory.PRINCIPAL,
+                                        "https://www.tasteatlas.com/images/dishes/913891c87f814c73aaa1aae404111922.jpg");
                         saveProduct("Milanesa Napolitana", "Milanesa de ternera con jamón, queso y salsa", "9800",
-                                        ProductCategory.PRINCIPAL);
-                        saveProduct("Pasta del Día", "Consultar variedad del día", "7500", ProductCategory.PRINCIPAL);
+                                        ProductCategory.PRINCIPAL,
+                                        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Milanesa_napolitana_%281%29.jpg/330px-Milanesa_napolitana_%281%29.jpg");
+                        saveProduct("Pasta del Día", "Consultar variedad del día", "7500",
+                                        ProductCategory.PRINCIPAL,
+                                        "https://rebeccasinternationalkitchen.com/wp-content/uploads/2013/11/L9-1024x682.jpg");
                         saveProduct("Suprema de Pollo", "Pechuga grillada con verduras salteadas", "8200",
-                                        ProductCategory.PRINCIPAL);
+                                        ProductCategory.PRINCIPAL,
+                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeVmLwF0CH99s1b2502IAWlkveF8_uOeLp_A&s");
 
                         // Postres
-                        saveProduct("Flan Casero", "Flan con dulce de leche y crema", "3200", ProductCategory.POSTRE);
+                        saveProduct("Flan Casero", "Flan con dulce de leche y crema", "3200",
+                                        ProductCategory.POSTRE,
+                                        "https://argentina.gastronomia.com/media/cache/noticia_grande/uploads/noticias/flan.Q2g4U2VHTmRnV2lKaXJ5dC8vMTQ5OTkxNDg2OC8.jpg");
                         saveProduct("Tiramisú", "Postre italiano con café y mascarpone", "4000",
-                                        ProductCategory.POSTRE);
+                                        ProductCategory.POSTRE,
+                                        "https://www.cucinare.tv/wp-content/uploads/2020/09/Tiramis%C3%BA-argentino-1579x850.jpg");
                         saveProduct("Helado (3 bochas)", "Selección de sabores artesanales", "3500",
-                                        ProductCategory.POSTRE);
+                                        ProductCategory.POSTRE,
+                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTt8GtUHFMttsvU0K1iCzigKIan4fxZpZsV-Q&s");
 
                         // Bebidas
-                        saveProduct("Agua Mineral", "500ml con o sin gas", "1200", ProductCategory.BEBIDA);
-                        saveProduct("Gaseosa", "Línea Coca-Cola 500ml", "1500", ProductCategory.BEBIDA);
-                        saveProduct("Jugo Natural", "Naranja o Pomelo exprimido", "2200", ProductCategory.BEBIDA);
-                        saveProduct("Café", "Espresso, cortado o con leche", "1800", ProductCategory.BEBIDA);
+                        saveProduct("Agua Mineral", "500ml con o sin gas", "1200",
+                                        ProductCategory.BEBIDA,
+                                        "https://statics.dinoonline.com.ar/imagenes/full_600x600_ma/3040004_f.jpg");
+                        saveProduct("Gaseosa", "Línea Coca-Cola 500ml", "1500",
+                                        ProductCategory.BEBIDA,
+                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMFvfnPcgeowjERkPX7VvLyRZBuFRUs_flVQ&s");
+                        saveProduct("Jugo Natural", "Naranja o Pomelo exprimido", "2200",
+                                        ProductCategory.BEBIDA,
+                                        "https://arcordiezb2c.vteximg.com.br/arquivos/ids/183684/JUGO-CEPITA-NARANJA-BOT-1-19938.jpg?v=638497641766170000");
+                        saveProduct("Café", "Espresso, cortado o con leche", "1800",
+                                        ProductCategory.BEBIDA,
+                                        "https://img.freepik.com/vector-gratis/taza-realista-cafe-negro-elaborado-ilustracion-vector-platillo_1284-66002.jpg?semt=ais_hybrid&w=740&q=80");
 
                         // Bebidas Alcohólicas
                         saveProduct("Cerveza Artesanal", "Pinta 500ml - Rubia, Roja o Negra", "3000",
-                                        ProductCategory.ALCOHOL);
-                        saveProduct("Vino Malbec", "Copa de vino tinto Malbec", "2800", ProductCategory.ALCOHOL);
-                        saveProduct("Fernet con Coca", "Trago clásico argentino", "3500", ProductCategory.ALCOHOL);
+                                        ProductCategory.ALCOHOL,
+                                        "https://jumboargentina.vtexassets.com/arquivos/ids/433499-800-600?v=636517616933330000&width=800&height=600&aspect=true");
+                        saveProduct("Vino Malbec", "Copa de vino tinto Malbec", "2800",
+                                        ProductCategory.ALCOHOL,
+                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTX9PH4rWcda7hMSlPhJfYWAdYj5FDQYA0CpQ&s");
+                        saveProduct("Fernet con Coca", "Trago clásico argentino", "3500",
+                                        ProductCategory.ALCOHOL,
+                                        "https://cdn.v2.tiendanegocio.com/gallery/18711/img_18711_18ef724f4e4.png");
 
                         log.info("Productos demo creados exitosamente");
                 }
         }
 
-        private void saveProduct(String nombre, String des, String precio, ProductCategory cat) {
+        private void saveProduct(String nombre, String des, String precio, ProductCategory cat, String imagen) {
                 productRepository.save(Product.builder()
                                 .nombre(nombre).descripcion(des).precio(new BigDecimal(precio)).categoria(cat)
-                                .disponible(true).build());
+                                .imagen(imagen).disponible(true).build());
         }
 
         private void loadStock() {
@@ -200,5 +228,87 @@ public class DataLoader implements CommandLineRunner {
 
                         log.info("Promociones cargadas exitosamente");
                 }
+        }
+
+        private void loadOrders() {
+                if (orderRepository.count() == 0) {
+                        log.info("Cargando pedidos demo para reportes...");
+
+                        List<Product> productos = productRepository.findAll();
+                        if (productos.isEmpty()) {
+                                log.warn("No hay productos para crear pedidos demo");
+                                return;
+                        }
+
+                        java.util.Random random = new java.util.Random(42); // Seed fijo para reproducibilidad
+                        PaymentMethod[] metodos = PaymentMethod.values();
+
+                        // Crear pedidos para los últimos 7 días
+                        for (int dia = 6; dia >= 0; dia--) {
+                                LocalDateTime fecha = LocalDateTime.now().minusDays(dia);
+                                // Más pedidos en fin de semana
+                                int pedidosDelDia = fecha.getDayOfWeek().getValue() >= 5 ? random.nextInt(10) + 8
+                                                : random.nextInt(6) + 4;
+
+                                for (int p = 0; p < pedidosDelDia; p++) {
+                                        createDemoOrder(productos, metodos, fecha, random, dia * 100 + p);
+                                }
+                        }
+
+                        log.info("Pedidos demo creados exitosamente: " + orderRepository.count());
+                }
+        }
+
+        private void createDemoOrder(List<Product> productos, PaymentMethod[] metodos,
+                        LocalDateTime fechaBase, java.util.Random random, int orderNum) {
+
+                // Hora aleatoria del día (11:00 - 22:00)
+                LocalDateTime fechaCreacion = fechaBase
+                                .withHour(11 + random.nextInt(11))
+                                .withMinute(random.nextInt(60));
+
+                CustomerOrder order = CustomerOrder.builder()
+                                .numeroPedido("PED-DEMO-" + String.format("%04d", orderNum))
+                                .numeroMesa(random.nextInt(10) + 1)
+                                .personas(random.nextInt(4) + 1)
+                                .estado(OrderStatus.PAGADO)
+                                .metodoPago(metodos[random.nextInt(metodos.length)])
+                                .fechaCreacion(fechaCreacion)
+                                .fechaActualizacion(fechaCreacion.plusMinutes(30 + random.nextInt(60)))
+                                .subtotal(BigDecimal.ZERO)
+                                .total(BigDecimal.ZERO)
+                                .items(new java.util.ArrayList<>())
+                                .build();
+
+                // Agregar 1-4 items aleatorios
+                int numItems = random.nextInt(4) + 1;
+                BigDecimal subtotal = BigDecimal.ZERO;
+
+                for (int i = 0; i < numItems; i++) {
+                        Product producto = productos.get(random.nextInt(productos.size()));
+                        int cantidad = random.nextInt(3) + 1;
+
+                        OrderItem item = OrderItem.builder()
+                                        .order(order)
+                                        .producto(producto)
+                                        .nombreProducto(producto.getNombre())
+                                        .cantidad(cantidad)
+                                        .precioUnitario(producto.getPrecio())
+                                        .build();
+
+                        order.getItems().add(item);
+                        subtotal = subtotal.add(producto.getPrecio().multiply(BigDecimal.valueOf(cantidad)));
+                }
+
+                // Propina aleatoria (10% de las veces)
+                BigDecimal propina = random.nextInt(10) == 0
+                                ? subtotal.multiply(new BigDecimal("0.10"))
+                                : BigDecimal.ZERO;
+
+                order.setSubtotal(subtotal);
+                order.setPropina(propina);
+                order.setTotal(subtotal.add(propina));
+
+                orderRepository.save(order);
         }
 }

@@ -1,10 +1,10 @@
 // Tipos de negocio del restaurante
 
 // Estados de mesa
-export type TableStatus = 'available' | 'occupied' | 'reserved';
+export type TableStatus = 'available' | 'occupied' | 'reserved' | 'pagada';
 
 // Estados de pedido
-export type OrderStatus = 'nuevo' | 'recibido' | 'en-preparacion' | 'listo' | 'entregado' | 'pagado';
+export type OrderStatus = 'nuevo' | 'recibido' | 'en-preparacion' | 'listo' | 'entregado' | 'pagado' | 'retrasado' | 'cancelado';
 
 // Métodos de pago
 export type PaymentMethod = 'efectivo' | 'tarjeta-debito' | 'tarjeta-credito' | 'transferencia' | 'qr';
@@ -17,6 +17,7 @@ export interface OrderItem {
     id: string;
     productoId: string;
     nombre: string;
+    imagen?: string;
     cantidad: number;
     precio: number;
     observaciones?: string;
@@ -35,6 +36,8 @@ export interface Order {
     propina?: number;
     total: number;
     metodoPago?: PaymentMethod;
+    listoParaPagar?: boolean;
+    metodoPagoSolicitado?: PaymentMethod;
     fechaCreacion: string;
 }
 

@@ -31,7 +31,7 @@ public interface OrderRepository extends JpaRepository<CustomerOrder, Long> {
     @Query("SELECT o FROM CustomerOrder o WHERE o.estado NOT IN ('PAGADO') ORDER BY o.fechaCreacion DESC")
     List<CustomerOrder> findActiveOrders();
 
-    @Query("SELECT o FROM CustomerOrder o WHERE o.estado IN ('NUEVO', 'RECIBIDO', 'EN_PREPARACION') ORDER BY o.fechaCreacion ASC")
+    @Query("SELECT o FROM CustomerOrder o WHERE o.estado IN ('NUEVO', 'RECIBIDO', 'EN_PREPARACION', 'RETRASADO', 'LISTO', 'CANCELADO') ORDER BY o.fechaCreacion ASC")
     List<CustomerOrder> findPendingOrders();
 
     @Query("SELECT COUNT(o) FROM CustomerOrder o WHERE o.estado = 'PAGADO' AND o.fechaCreacion >= :desde")

@@ -8,7 +8,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum TableStatus {
     AVAILABLE, // Disponible
     OCCUPIED, // Ocupada
-    RESERVED; // Reservada
+    RESERVED, // Reservada
+    PAGADA; // Pagada (esperando ser liberada)
 
     @JsonValue
     public String toValue() {

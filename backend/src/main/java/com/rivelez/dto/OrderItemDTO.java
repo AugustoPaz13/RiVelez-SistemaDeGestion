@@ -19,6 +19,7 @@ public class OrderItemDTO {
     private Long id;
     private Long productoId;
     private String nombreProducto;
+    private String imagenProducto; // Imagen del producto
     private Integer cantidad;
     private BigDecimal precioUnitario;
     private BigDecimal subtotal;

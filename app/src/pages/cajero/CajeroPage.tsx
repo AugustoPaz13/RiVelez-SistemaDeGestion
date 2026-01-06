@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Navbar } from '../../components/layout/Navbar';
 import { TableCard } from '../../components/cajero/TableCard';
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../../components/ui/dialog';
@@ -8,6 +8,9 @@ import { Badge } from '../../components/ui/badge';
 import { Separator } from '../../components/ui/separator';
 import { Search, RefreshCw, Users, CreditCard, Trash2, Banknote, FileText, CheckCircle2, Printer, Mail } from 'lucide-react';
 import { toast, Toaster } from '../../components/ui/sonner';
+import { tableService } from '../../services/tableService';
+import { orderService } from '../../services/orderService';
+import { PaymentMethod } from '../../types';
 
 interface OrderItem {
     id: string;
@@ -18,82 +21,20 @@ interface OrderItem {
 
 interface TableData {
     tableNumber: number;
-    status: 'available' | 'occupied' | 'reserved';
-    guests?: number;
+    status: 'available' | 'occupied' | 'reserved' | 'ready-to-pay';
+    guests?: number; // Ocupantes actuales
+    capacity: number; // Capacidad total de la mesa
     items: OrderItem[];
     startTime?: string;
+    orderId?: string;  // ID del pedido actual para llamadas a la API
+    paymentMethod?: string; // Método de pago seleccionado por el cliente
 }
-
-const initialTables: TableData[] = [
-    {
-        tableNumber: 1,
-        status: 'occupied',
-        guests: 4,
-        startTime: '14:30',
-        items: [
-            { id: '1', name: 'Pizza Margarita', quantity: 2, price: 12.50 },
-            { id: '2', name: 'Coca Cola', quantity: 4, price: 2.50 },
-            { id: '3', name: 'Ensalada César', quantity: 1, price: 8.00 },
-            { id: '4', name: 'Helado de Chocolate', quantity: 2, price: 4.50 }
-        ]
-    },
-    { tableNumber: 2, status: 'available', guests: 0, items: [] },
-    {
-        tableNumber: 3,
-        status: 'occupied',
-        guests: 2,
-        startTime: '15:15',
-        items: [
-            { id: '5', name: 'Hamburguesa Clásica', quantity: 2, price: 10.00 },
-            { id: '6', name: 'Papas Fritas', quantity: 2, price: 4.00 },
-            { id: '7', name: 'Cerveza Artesanal', quantity: 2, price: 6.50 }
-        ]
-    },
-    { tableNumber: 4, status: 'reserved', guests: 0, items: [] },
-    {
-        tableNumber: 5,
-        status: 'occupied',
-        guests: 3,
-        startTime: '13:45',
-        items: [
-            { id: '8', name: 'Pasta Carbonara', quantity: 1, price: 14.00 },
-            { id: '9', name: 'Risotto de Hongos', quantity: 1, price: 15.50 },
-            { id: '10', name: 'Tiramisú', quantity: 2, price: 5.50 },
-            { id: '11', name: 'Café Espresso', quantity: 3, price: 2.00 }
-        ]
-    },
-    { tableNumber: 6, status: 'available', guests: 0, items: [] },
-    {
-        tableNumber: 7,
-        status: 'occupied',
-        guests: 6,
-        startTime: '14:00',
-        items: [
-            { id: '12', name: 'Parrillada Mixta', quantity: 1, price: 45.00 },
-            { id: '13', name: 'Vino Tinto', quantity: 2, price: 18.00 },
-            { id: '14', name: 'Agua Mineral', quantity: 4, price: 1.50 }
-        ]
-    },
-    { tableNumber: 8, status: 'available', guests: 0, items: [] },
-    {
-        tableNumber: 9,
-        status: 'occupied',
-        guests: 2,
-        startTime: '15:30',
-        items: [
-            { id: '15', name: 'Sushi Variado', quantity: 1, price: 22.00 },
-            { id: '16', name: 'Té Verde', quantity: 2, price: 2.50 }
-        ]
-    },
-    { tableNumber: 10, status: 'available', guests: 0, items: [] },
-    { tableNumber: 11, status: 'reserved', guests: 0, items: [] },
-    { tableNumber: 12, status: 'available', guests: 0, items: [] }
-];
 
 type DialogView = 'order' | 'payment' | 'processing' | 'success' | 'cancelled' | 'rejected' | 'cancel-confirm' | 'delete-confirm' | 'receipt' | null;
 
 export default function CajeroPage() {
-    const [tables, setTables] = useState<TableData[]>(initialTables);
+    const [tables, setTables] = useState<TableData[]>([]);
+    const [loading, setLoading] = useState(true);
     const [selectedTable, setSelectedTable] = useState<TableData | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [dialogView, setDialogView] = useState<DialogView>(null);
@@ -104,10 +45,84 @@ export default function CajeroPage() {
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
     // const [lastDeletedItem, setLastDeletedItem] = useState<{ item: OrderItem; tableNumber: number } | null>(null);
 
+    // Función para cargar mesas y pedidos del backend
+    const fetchTablesWithOrders = useCallback(async () => {
+        try {
+            // Obtener mesas y pedidos activos en paralelo
+            const [tablesData, activeOrders] = await Promise.all([
+                tableService.getAll(),
+                orderService.getActive(),
+            ]);
+
+            // Mapear mesas con sus pedidos
+            const mappedTables: TableData[] = tablesData.map(table => {
+                // Buscar el pedido activo para esta mesa
+                const activeOrder = activeOrders.find(order => order.numeroMesa === table.numero);
+
+                // Determinar el estado de la mesa
+                let tableStatus: TableData['status'] = table.estado as 'available' | 'occupied' | 'reserved';
+
+                // Si hay un pedido y el cliente está listo para pagar, cambiar a 'ready-to-pay'
+                if (activeOrder?.listoParaPagar && tableStatus === 'occupied') {
+                    tableStatus = 'ready-to-pay';
+                }
+
+                // Mapear método de pago solicitado a nombre legible
+                const paymentMethodMap: Record<string, string> = {
+                    'EFECTIVO': 'Efectivo',
+                    'TARJETA_CREDITO': 'Tarjeta',
+                    'TARJETA_DEBITO': 'Débito',
+                    'TRANSFERENCIA': 'Transferencia',
+                    'OTRO': 'Otro',
+                };
+
+                return {
+                    tableNumber: table.numero,
+                    status: tableStatus,
+                    capacity: table.capacidad,
+                    guests: activeOrder ? activeOrder.personas : (table.ocupantes || 0),
+
+                    startTime: table.horaInicio ? new Date(table.horaInicio).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : undefined,
+                    items: activeOrder ? activeOrder.items.map(item => ({
+                        id: item.id,
+                        name: item.nombre,
+                        quantity: item.cantidad,
+                        price: item.precio,
+                    })) : [],
+                    orderId: activeOrder?.id,
+                    paymentMethod: activeOrder?.metodoPagoSolicitado
+                        ? paymentMethodMap[activeOrder.metodoPagoSolicitado] || activeOrder.metodoPagoSolicitado
+                        : undefined,
+                };
+            });
+
+            setTables(mappedTables);
+        } catch (error) {
+            console.error('Error al cargar mesas:', error);
+            toast.error('Error al cargar datos del servidor');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Cargar mesas al montar y configurar polling
+    useEffect(() => {
+        fetchTablesWithOrders();
+
+        // Polling cada 10 segundos
+        const interval = setInterval(fetchTablesWithOrders, 10000);
+
+        return () => clearInterval(interval);
+    }, [fetchTablesWithOrders]);
+
     const handleTableClick = (table: TableData) => {
-        if (table.status === 'occupied') {
+        if (table.status === 'ready-to-pay') {
             setSelectedTable(table);
             setDialogView('order');
+        } else if (table.status === 'occupied') {
+            toast.warning(`Mesa ${table.tableNumber} ocupada. Esperando solicitud de pago del cliente.`, {
+                style: { backgroundColor: '#fef3c7', color: '#92400e' }
+            });
         } else if (table.status === 'available') {
             toast.info(`Mesa ${table.tableNumber} está disponible`);
         } else if (table.status === 'reserved') {
@@ -206,7 +221,14 @@ export default function CajeroPage() {
         // setPaymentMethod(method);
 
         if (method === 'cash') {
-            // Efectivo - éxito inmediato
+            // Efectivo - procesar pago en el backend
+            if (selectedTable?.orderId) {
+                try {
+                    await orderService.processPayment(selectedTable.orderId, 'efectivo' as PaymentMethod);
+                } catch (error) {
+                    console.error('Error al procesar pago en backend:', error);
+                }
+            }
             setDialogView('success');
             setTimeout(() => {
                 setDialogView('receipt');
@@ -222,6 +244,15 @@ export default function CajeroPage() {
             isProcessingPayment.current = false;
 
             if (result.success) {
+                // Procesar pago en el backend
+                if (selectedTable?.orderId) {
+                    try {
+                        await orderService.processPayment(selectedTable.orderId, 'tarjeta-credito' as PaymentMethod);
+                    } catch (error) {
+                        console.error('Error al procesar pago en backend:', error);
+                        // Continuar mostrando éxito pero logear el error
+                    }
+                }
                 setDialogView('success');
                 setTimeout(() => {
                     setDialogView('receipt');
@@ -260,14 +291,9 @@ export default function CajeroPage() {
         setTimeout(() => completePayment(), 1000);
     };
 
-    const completePayment = () => {
-        if (selectedTable) {
-            setTables(tables.map(table =>
-                table.tableNumber === selectedTable.tableNumber
-                    ? { ...table, status: 'available', guests: 0, items: [], startTime: undefined }
-                    : table
-            ));
-        }
+    const completePayment = async () => {
+        // Refrescar datos del backend (la mesa ya debería estar liberada si el pedido fue pagado)
+        await fetchTablesWithOrders();
         setDialogView(null);
         setSelectedTable(null);
         setEmail('');
@@ -332,7 +358,10 @@ export default function CajeroPage() {
                                         style={{ paddingLeft: '2.5rem' }}
                                     />
                                 </div>
-                                <Button variant="outline" onClick={() => toast.success('Datos actualizados')}>
+                                <Button variant="outline" onClick={async () => {
+                                    await fetchTablesWithOrders();
+                                    toast.success('Datos actualizados');
+                                }}>
                                     <RefreshCw style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} />
                                     Actualizar
                                 </Button>
@@ -341,23 +370,41 @@ export default function CajeroPage() {
                     </div>
 
                     {/* Grid de mesas */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-                        {filteredTables.map((table) => (
-                            <TableCard
-                                key={table.tableNumber}
-                                tableNumber={table.tableNumber}
-                                status={table.status}
-                                guests={table.guests}
-                                total={table.items.length > 0 ? calculateTotal(table.items) : undefined}
-                                onClick={() => handleTableClick(table)}
-                            />
-                        ))}
-                    </div>
-
-                    {filteredTables.length === 0 && (
-                        <div style={{ textAlign: 'center', padding: '3rem', color: 'white' }}>
-                            No se encontraron mesas
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '4rem', color: 'white' }}>
+                            <div style={{
+                                width: '48px',
+                                height: '48px',
+                                border: '4px solid rgba(255,255,255,0.3)',
+                                borderTopColor: 'white',
+                                borderRadius: '50%',
+                                animation: 'spin 1s linear infinite',
+                                margin: '0 auto 1rem'
+                            }} />
+                            <p style={{ fontSize: '1.125rem' }}>Cargando mesas...</p>
                         </div>
+                    ) : (
+                        <>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                                {filteredTables.map((table) => (
+                                    <TableCard
+                                        key={table.tableNumber}
+                                        tableNumber={table.tableNumber}
+                                        status={table.status}
+                                        guests={table.guests}
+                                        total={table.items.length > 0 ? calculateTotal(table.items) : undefined}
+                                        paymentMethod={table.paymentMethod}
+                                        onClick={() => handleTableClick(table)}
+                                    />
+                                ))}
+                            </div>
+
+                            {filteredTables.length === 0 && (
+                                <div style={{ textAlign: 'center', padding: '3rem', color: 'white' }}>
+                                    No se encontraron mesas
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 

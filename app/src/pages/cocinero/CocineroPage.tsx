@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Navbar } from '../../components/layout/Navbar';
 import { OrderCard, KitchenOrder } from '../../components/cocinero/OrderCard';
 import { Badge } from '../../components/ui/badge';
@@ -9,93 +9,113 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/ta
 import { toast } from '../../components/ui/sonner';
 import { Toaster } from '../../components/ui/sonner';
 import { Bell, ChefHat, Clock, ClipboardList, CheckCircle, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { orderService } from '../../services/orderService';
+import { Order, OrderStatus } from '../../types';
 
-// Mock data - pedidos simulados con nuevas funcionalidades
-const mockOrders: KitchenOrder[] = [
-    {
-        id: 'PED-001',
-        tableNumber: 1,
-        status: 'nuevo',
-        receivedAt: new Date(Date.now() - 1 * 60000).toISOString(),
-        canBeCancelled: true,
-        cancellationDeadline: new Date(Date.now() + 1 * 60000).toISOString(),
-        people: 4,
-        items: [
-            {
-                id: '1',
-                name: 'Pizza Margarita',
-                quantity: 2,
-                image: 'images/products/pizza-margarita.png',
-                ingredients: [
-                    { id: 'ing-001', name: 'Harina', quantityNeeded: 0.5, unit: 'kg' },
-                    { id: 'ing-002', name: 'Queso Mozzarella', quantityNeeded: 0.3, unit: 'kg' },
-                    { id: 'ing-003', name: 'Salsa de Tomate', quantityNeeded: 0.2, unit: 'L' }
-                ]
-            },
-            { id: '2', name: 'Ensalada César', quantity: 1, image: 'images/products/ensalada-cesar.png' }
-        ]
-    },
-    {
-        id: 'PED-002',
-        tableNumber: 3,
-        status: 'nuevo',
-        receivedAt: new Date(Date.now() - 5 * 60000).toISOString(),
-        canBeCancelled: false,
-        people: 2,
-        items: [
-            { id: '3', name: 'Hamburguesa Clásica', quantity: 1, image: 'images/products/hamburguesa-clasica.png', notes: 'Término medio' }
-        ]
-    },
-    {
-        id: 'PED-003',
-        tableNumber: 5,
-        status: 'en-preparacion',
-        receivedAt: new Date(Date.now() - 25 * 60000).toISOString(),
-        startedAt: new Date(Date.now() - 15 * 60000).toISOString(),
-        canBeCancelled: false,
-        people: 3,
-        items: [
-            { id: '4', name: 'Pasta Carbonara', quantity: 2, image: 'images/products/pasta-carbonara.png' },
-            { id: '5', name: 'Risotto de Hongos', quantity: 1, image: 'images/products/risotto-hongos.png' }
-        ]
-    },
-    {
-        id: 'PED-004',
-        tableNumber: 7,
-        status: 'retrasado',
-        receivedAt: new Date(Date.now() - 40 * 60000).toISOString(),
-        startedAt: new Date(Date.now() - 30 * 60000).toISOString(),
-        canBeCancelled: false,
-        people: 6,
-        items: [
-            { id: '6', name: 'Parrillada Mixta', quantity: 1, image: 'images/products/parrillada-mixta.png' }
-        ]
-    },
-    {
-        id: 'PED-005',
-        tableNumber: 2,
-        status: 'listo',
-        receivedAt: new Date(Date.now() - 35 * 60000).toISOString(),
-        startedAt: new Date(Date.now() - 25 * 60000).toISOString(),
-        completedAt: new Date(Date.now() - 2 * 60000).toISOString(),
-        canBeCancelled: false,
-        people: 2,
-        items: [
-            { id: '7', name: 'Pizza Margarita', quantity: 1, image: 'images/products/pizza-margarita.png' },
-            { id: '8', name: 'Ensalada César', quantity: 2, image: 'images/products/ensalada-cesar.png' }
-        ]
-    }
-];
+// Función para mapear Order del backend a KitchenOrder del frontend
+const mapOrderToKitchenOrder = (order: Order): KitchenOrder => {
+    // Mapear estado del backend al formato del frontend
+    const statusMap: Record<string, KitchenOrder['status']> = {
+        'nuevo': 'nuevo',
+        'recibido': 'nuevo',
+        'en-preparacion': 'en-preparacion',
+        'listo': 'listo',
+        'retrasado': 'retrasado',
+        'cancelado': 'cancelado',
+        'entregado': 'listo',
+        'pagado': 'listo',
+    };
+
+    const fechaCreacion = new Date(order.fechaCreacion);
+    // Período de cancelación: 2 minutos desde la creación
+    const cancellationDeadline = new Date(fechaCreacion.getTime() + 2 * 60 * 1000);
+    const now = new Date();
+    const canBeCancelled = now < cancellationDeadline && (order.estado === 'nuevo' || order.estado === 'recibido');
+
+    return {
+        id: order.numeroPedido,
+        tableNumber: order.numeroMesa,
+        status: statusMap[order.estado] || 'nuevo',
+        receivedAt: order.fechaCreacion,
+        startedAt: order.estado === 'en-preparacion' ? order.fechaCreacion : undefined,
+        completedAt: order.estado === 'listo' || order.estado === 'entregado' ? order.fechaCreacion : undefined,
+        canBeCancelled,
+        cancellationDeadline: cancellationDeadline.toISOString(),
+        people: order.personas,
+        items: order.items.map(item => ({
+            id: item.id,
+            name: item.nombre,
+            quantity: item.cantidad,
+            image: item.imagen || 'images/products/default.png',
+            notes: item.observaciones,
+        })),
+        // Guardar ID original para llamadas a la API
+        _originalId: order.id,
+    } as KitchenOrder & { _originalId: string };
+};
 
 export default function CocineroPage() {
-    const [orders, setOrders] = useState<KitchenOrder[]>(mockOrders);
-    const [selectedOrder, setSelectedOrder] = useState<KitchenOrder | null>(null);
+    const [orders, setOrders] = useState<(KitchenOrder & { _originalId?: string })[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedOrder, setSelectedOrder] = useState<(KitchenOrder & { _originalId?: string }) | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [, setCurrentTime] = useState(new Date());
     const [currentTimeDisplay, setCurrentTimeDisplay] = useState('');
     const [newOrderNotification, setNewOrderNotification] = useState<KitchenOrder | null>(null);
+    const [cancelledOrderNotification, setCancelledOrderNotification] = useState<KitchenOrder | null>(null);
     const [isNotifying, setIsNotifying] = useState(false);
     const [notificationComplete, setNotificationComplete] = useState(false);
+    const [previousOrderIds, setPreviousOrderIds] = useState<Set<string>>(new Set());
+
+    // Función para cargar pedidos del backend
+    const fetchOrders = useCallback(async () => {
+        try {
+            const pendingOrders = await orderService.getPending();
+            const mappedOrders = pendingOrders.map(mapOrderToKitchenOrder);
+
+            // Detectar nuevos pedidos para notificación
+            const currentIds = new Set(mappedOrders.map(o => o.id));
+            const newOrders = mappedOrders.filter(o =>
+                !previousOrderIds.has(o.id) && o.status === 'nuevo'
+            );
+
+            if (newOrders.length > 0 && previousOrderIds.size > 0) {
+                // Hay nuevos pedidos - mostrar notificación del primero
+                setNewOrderNotification(newOrders[0]);
+            }
+
+            // Detectar pedidos cancelados (que aparecen con status 'cancelado')
+            const cancelledOrders = mappedOrders.filter(o => o.status === 'cancelado');
+            if (cancelledOrders.length > 0) {
+                // Mostrar alerta del primero que encontremos
+                setCancelledOrderNotification(cancelledOrders[0]);
+            }
+
+            setPreviousOrderIds(currentIds);
+            setOrders(mappedOrders);
+        } catch (error) {
+            console.error('Error al cargar pedidos:', error);
+            toast.error('Error al cargar pedidos del servidor');
+        } finally {
+            setLoading(false);
+        }
+    }, [previousOrderIds]);
+
+    // Cargar pedidos inicialmente y configurar polling
+    useEffect(() => {
+        fetchOrders();
+
+        // Polling cada 5 segundos para actualización en tiempo real
+        const interval = setInterval(fetchOrders, 5000);
+
+        return () => clearInterval(interval);
+    }, []); // Solo ejecutar una vez al montar
+
+    // Refetch cuando cambia la función (para detectar nuevos pedidos)
+    useEffect(() => {
+        const interval = setInterval(fetchOrders, 5000);
+        return () => clearInterval(interval);
+    }, [fetchOrders]);
 
     // Auto-actualizar cada segundo para countdown y reloj
     useEffect(() => {
@@ -110,17 +130,6 @@ export default function CocineroPage() {
         return () => clearInterval(interval);
     }, []);
 
-    // Simular llegada de nuevos pedidos - mostrar popup automáticamente
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            const newOrder = orders.find(o => o.status === 'nuevo' && !newOrderNotification);
-            if (newOrder) {
-                setNewOrderNotification(newOrder);
-            }
-        }, 2000); // 2 segundos después de cargar
-        return () => clearTimeout(timer);
-    }, []);
-
     const handleCardClick = (order: KitchenOrder) => {
         setSelectedOrder(order);
         setDialogOpen(true);
@@ -130,6 +139,23 @@ export default function CocineroPage() {
         if (newOrderNotification) {
             toast.info('Pedido confirmado como recibido');
             setNewOrderNotification(null);
+        }
+    };
+
+    const handleDismissCancellation = async () => {
+        if (cancelledOrderNotification) {
+            try {
+                // Llamar al backend para eliminar definitivamente (dismiss)
+                if (cancelledOrderNotification._originalId) {
+                    await orderService.dismiss(cancelledOrderNotification._originalId);
+                }
+                setCancelledOrderNotification(null);
+                fetchOrders(); // Recargar para que desaparezca
+                toast.info('Notificación de cancelación descartada');
+            } catch (error) {
+                console.error('Error al descartar cancelación:', error);
+                toast.error('Error al descartar notificación');
+            }
         }
     };
 
@@ -151,20 +177,6 @@ export default function CocineroPage() {
         setNotificationComplete(false);
     };
 
-    // TODO: Conectar con BD cuando esté lista
-    const deductStockForOrder = (order: KitchenOrder) => {
-        console.log('=== DESCUENTO DE STOCK ===');
-        order.items.forEach(item => {
-            if (item.ingredients) {
-                item.ingredients.forEach(ingredient => {
-                    const totalNeeded = ingredient.quantityNeeded * item.quantity;
-                    console.log(`Descontar: ${totalNeeded}${ingredient.unit} de ${ingredient.name}`);
-                });
-            }
-        });
-        console.log('=== FIN DESCUENTO ===');
-    };
-
     const handleStartOrder = async () => {
         if (selectedOrder) {
             // Verificar si aún está en período de cancelación
@@ -181,23 +193,22 @@ export default function CocineroPage() {
 
             setDialogOpen(false);
 
-            // Notificar al cliente
-            await notifyClient('en-preparacion');
+            try {
+                // Notificar al cliente (visual)
+                await notifyClient('en-preparacion');
 
-            // Descuento de stock
-            deductStockForOrder(selectedOrder);
+                // Actualizar estado en el backend (el descuento de stock se hace automáticamente)
+                if (selectedOrder._originalId) {
+                    await orderService.updateStatus(selectedOrder._originalId, 'en-preparacion' as OrderStatus);
+                }
 
-            setOrders(orders.map(order =>
-                order.id === selectedOrder.id
-                    ? {
-                        ...order,
-                        status: 'en-preparacion',
-                        startedAt: new Date().toISOString(),
-                        canBeCancelled: false
-                    }
-                    : order
-            ));
-            toast.success('Pedido en preparación - Stock descontado');
+                // Refrescar lista de pedidos
+                await fetchOrders();
+                toast.success('Pedido en preparación - Stock descontado');
+            } catch (error) {
+                console.error('Error al actualizar estado:', error);
+                toast.error('Error al actualizar el pedido');
+            }
         }
     };
 
@@ -205,16 +216,22 @@ export default function CocineroPage() {
         if (selectedOrder) {
             setDialogOpen(false);
 
-            // Mostrar loading de notificación
-            await notifyClient('listo');
+            try {
+                // Mostrar loading de notificación
+                await notifyClient('listo');
 
-            // Una vez notificado, actualizar estado
-            setOrders(orders.map(order =>
-                order.id === selectedOrder.id
-                    ? { ...order, status: 'listo', completedAt: new Date().toISOString() }
-                    : order
-            ));
-            toast.success('¡Pedido listo para servir!');
+                // Actualizar estado en el backend
+                if (selectedOrder._originalId) {
+                    await orderService.updateStatus(selectedOrder._originalId, 'listo' as OrderStatus);
+                }
+
+                // Refrescar lista de pedidos
+                await fetchOrders();
+                toast.success('¡Pedido listo para servir!');
+            } catch (error) {
+                console.error('Error al actualizar estado:', error);
+                toast.error('Error al marcar pedido como listo');
+            }
         }
     };
 
@@ -222,33 +239,58 @@ export default function CocineroPage() {
         if (selectedOrder) {
             setDialogOpen(false);
 
-            // Notificar al cliente
-            await notifyClient('retrasado');
+            try {
+                // Notificar al cliente (visual)
+                await notifyClient('retrasado');
 
-            setOrders(orders.map(order =>
-                order.id === selectedOrder.id
-                    ? { ...order, status: 'retrasado' }
-                    : order
-            ));
-            toast.warning('Pedido marcado como retrasado', {
-                style: { backgroundColor: '#fef3c7', color: '#92400e' }
-            });
+                // Actualizar estado en el backend
+                if (selectedOrder._originalId) {
+                    await orderService.updateStatus(selectedOrder._originalId, 'retrasado' as OrderStatus);
+                }
+
+                // Refrescar lista de pedidos
+                await fetchOrders();
+                toast.warning('Pedido marcado como retrasado - Cliente notificado', {
+                    style: { backgroundColor: '#fef3c7', color: '#92400e' }
+                });
+            } catch (error) {
+                console.error('Error al actualizar estado:', error);
+                toast.error('Error al marcar como retrasado');
+            }
         }
     };
 
     const handleResumeOrder = async () => {
         if (selectedOrder) {
+            // Verificar si aún está en período de cancelación (Loophole Check)
+            if (selectedOrder.canBeCancelled && selectedOrder.cancellationDeadline) {
+                const now = new Date();
+                const deadline = new Date(selectedOrder.cancellationDeadline);
+
+                if (now < deadline) {
+                    const remaining = Math.ceil((deadline.getTime() - now.getTime()) / 1000);
+                    toast.error(`Espera ${remaining}s para retomar (período de cancelación)`);
+                    return;
+                }
+            }
             setDialogOpen(false);
 
-            // Notificar al cliente
-            await notifyClient('en-preparacion');
+            try {
+                // Notificar al cliente (visual)
+                await notifyClient('en-preparacion');
 
-            setOrders(orders.map(order =>
-                order.id === selectedOrder.id
-                    ? { ...order, status: 'en-preparacion' }
-                    : order
-            ));
-            toast.success('Pedido vuelto a preparación');
+                // Actualizar estado en el backend
+                if (selectedOrder._originalId) {
+                    await orderService.updateStatus(selectedOrder._originalId, 'en-preparacion' as OrderStatus);
+                }
+
+                // Refrescar lista de pedidos
+                await fetchOrders();
+                toast.success('Pedido vuelto a preparación');
+            } catch (error) {
+                console.error('Error al actualizar estado:', error);
+                toast.error('Error al actualizar el pedido');
+            }
         }
     };
 
@@ -442,6 +484,15 @@ export default function CocineroPage() {
                                         {enPreparacionOrders.length} En Prep.
                                     </Badge>
                                     <Badge style={{
+                                        backgroundColor: '#fef3c7',
+                                        color: '#92400e',
+                                        border: '1px solid #fde68a',
+                                        padding: '0.4rem 0.75rem',
+                                        fontSize: 'clamp(0.75rem, 2vw, 0.875rem)'
+                                    }}>
+                                        {retrasadosOrders.length} Retrasados
+                                    </Badge>
+                                    <Badge style={{
                                         backgroundColor: '#d1fae5',
                                         color: '#065f46',
                                         border: '1px solid #a7f3d0',
@@ -454,6 +505,10 @@ export default function CocineroPage() {
                                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', justifyContent: window.innerWidth < 768 ? 'space-between' : 'flex-start' }}>
                                     <Button
                                         variant="ghost"
+                                        onClick={() => {
+                                            fetchOrders();
+                                            toast.info('Actualizando pedidos...');
+                                        }}
                                         style={{ display: 'flex', gap: '0.5rem', padding: '0.5rem 0.75rem', fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}
                                     >
                                         <RefreshCw style={{ width: '1rem', height: '1rem' }} />
@@ -503,23 +558,40 @@ export default function CocineroPage() {
 
                             {/* Tab de Nuevos */}
                             <TabsContent value="nuevos" style={{ padding: '1rem' }}>
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                                    gap: '1.5rem'
-                                }}>
-                                    {nuevosOrders.map(order => (
-                                        <OrderCard
-                                            key={order.id}
-                                            order={order}
-                                            onClick={() => handleCardClick(order)}
-                                        />
-                                    ))}
-                                </div>
-                                {nuevosOrders.length === 0 && (
+                                {loading ? (
                                     <div style={{ textAlign: 'center', padding: '4rem', color: '#6b7280' }}>
-                                        <p style={{ fontSize: '1.125rem' }}>No hay pedidos nuevos</p>
+                                        <div style={{
+                                            width: '48px',
+                                            height: '48px',
+                                            border: '4px solid #e5e7eb',
+                                            borderTopColor: '#3b82f6',
+                                            borderRadius: '50%',
+                                            animation: 'spin 1s linear infinite',
+                                            margin: '0 auto 1rem'
+                                        }} />
+                                        <p style={{ fontSize: '1.125rem' }}>Cargando pedidos...</p>
                                     </div>
+                                ) : (
+                                    <>
+                                        <div style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                                            gap: '1.5rem'
+                                        }}>
+                                            {nuevosOrders.map(order => (
+                                                <OrderCard
+                                                    key={order.id}
+                                                    order={order}
+                                                    onClick={() => handleCardClick(order)}
+                                                />
+                                            ))}
+                                        </div>
+                                        {nuevosOrders.length === 0 && (
+                                            <div style={{ textAlign: 'center', padding: '4rem', color: '#6b7280' }}>
+                                                <p style={{ fontSize: '1.125rem' }}>No hay pedidos nuevos</p>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </TabsContent>
 
@@ -663,27 +735,29 @@ export default function CocineroPage() {
                                         new Date() < new Date(selectedOrder.cancellationDeadline) ? (
                                         <Button
                                             disabled
-                                            style={{
-                                                flex: 1,
-                                                backgroundColor: '#9ca3af',
-                                                cursor: 'not-allowed',
-                                                opacity: 0.6
-                                            }}
+                                            className="bg-gray-400 opacity-60 cursor-not-allowed rounded-xl h-12 text-base shadow-sm"
+                                            style={{ flex: 1 }}
                                         >
-                                            Esperar período de cancelación
+                                            <Clock className="w-5 h-5 mr-2" />
+                                            Esperar ({Math.ceil((new Date(selectedOrder.cancellationDeadline).getTime() - new Date().getTime()) / 1000)}s)
                                         </Button>
                                     ) : (
                                         <Button
                                             onClick={handleStartOrder}
-                                            style={{ flex: 1, backgroundColor: '#3b82f6' }}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-12 text-base font-semibold shadow-md transition-all hover:scale-[1.02]"
+                                            style={{ flex: 1 }}
                                         >
-                                            Comenzar a Preparar
+                                            <ChefHat className="w-5 h-5 mr-2" />
+                                            Preparar
                                         </Button>
                                     )}
                                     <Button
                                         onClick={handleMarkDelayed}
-                                        style={{ flex: 0.6, backgroundColor: '#f59e0b' }}
+                                        disabled={selectedOrder.canBeCancelled && selectedOrder.cancellationDeadline && new Date() < new Date(selectedOrder.cancellationDeadline) ? true : false}
+                                        className={`hover:bg-amber-600 text-white rounded-xl h-12 text-base font-semibold shadow-md transition-all hover:scale-[1.02] ${selectedOrder.canBeCancelled && selectedOrder.cancellationDeadline && new Date() < new Date(selectedOrder.cancellationDeadline) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        style={{ backgroundColor: '#f59e0b', flex: 1 }}
                                     >
+                                        <Clock className="w-5 h-5 mr-2" />
                                         Retrasado
                                     </Button>
                                 </div>
@@ -693,14 +767,18 @@ export default function CocineroPage() {
                                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                                     <Button
                                         onClick={handleCompleteOrder}
-                                        style={{ flex: 1, backgroundColor: '#10b981' }}
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-12 text-base font-semibold shadow-md transition-all hover:scale-[1.02]"
+                                        style={{ flex: 1 }}
                                     >
-                                        Marcar como Listo
+                                        <CheckCircle2 className="w-5 h-5 mr-2" />
+                                        Listo
                                     </Button>
                                     <Button
                                         onClick={handleMarkDelayed}
-                                        style={{ flex: 0.6, backgroundColor: '#f59e0b' }}
+                                        className="hover:bg-amber-600 text-white rounded-xl h-12 text-base font-semibold shadow-md transition-all hover:scale-[1.02]"
+                                        style={{ backgroundColor: '#f59e0b', flex: 1 }}
                                     >
+                                        <Clock className="w-5 h-5 mr-2" />
                                         Retrasado
                                     </Button>
                                 </div>
@@ -709,8 +787,9 @@ export default function CocineroPage() {
                             {selectedOrder.status === 'retrasado' && (
                                 <Button
                                     onClick={handleResumeOrder}
-                                    style={{ flex: 1, backgroundColor: '#3b82f6' }}
+                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-12 text-base font-semibold shadow-md transition-all hover:scale-[1.02]"
                                 >
+                                    <RefreshCw className="w-5 h-5 mr-2" />
                                     Volver a Preparación
                                 </Button>
                             )}
@@ -718,13 +797,78 @@ export default function CocineroPage() {
                             <Button
                                 variant="outline"
                                 onClick={() => setDialogOpen(false)}
+                                className="w-full mt-2 border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl h-10 font-medium"
                             >
                                 Cerrar
                             </Button>
                         </div>
-                    </DialogContent>
-                </Dialog>
-            )}
+                    </DialogContent >
+                </Dialog >
+            )
+            }
+            {/* Popup de Pedido Cancelado (ALERTA ROJA) */}
+            {
+                cancelledOrderNotification && (
+                    <div style={{
+                        position: 'fixed',
+                        top: '1rem',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: 9999,
+                        animation: 'slideInRight 0.3s ease-out',
+                        maxWidth: '95%',
+                        width: '400px'
+                    }}>
+                        <Card style={{
+                            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.3)',
+                            border: '4px solid #ef4444',
+                            backgroundColor: '#fee2e2'
+                        }}>
+                            <CardHeader>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div style={{
+                                        backgroundColor: '#ef4444',
+                                        padding: '0.75rem',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <Bell style={{ width: '1.5rem', height: '1.5rem', color: 'white' }} />
+                                    </div>
+                                    <div>
+                                        <CardTitle style={{ color: '#991b1b', marginBottom: '0.25rem' }}>
+                                            ¡PEDIDO CANCELADO!
+                                        </CardTitle>
+                                        <p style={{ color: '#b91c1c', fontSize: '0.875rem' }}>
+                                            Mesa {cancelledOrderNotification.tableNumber} - {cancelledOrderNotification.id}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <p style={{ color: '#7c2d12', fontWeight: '600', marginBottom: '0.5rem' }}>
+                                        El cliente ha cancelado este pedido.
+                                    </p>
+                                </div>
+                                <Button
+                                    onClick={handleDismissCancellation}
+                                    style={{
+                                        width: '100%',
+                                        backgroundColor: '#ef4444',
+                                        color: 'white',
+                                        fontWeight: '600',
+                                        padding: '0.75rem'
+                                    }}
+                                >
+                                    Entendido - Eliminar de Vista
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )
+            }
         </>
     );
 }

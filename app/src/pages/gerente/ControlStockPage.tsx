@@ -1,24 +1,45 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from '../../components/layout/Navbar';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from '../../components/ui/dialog';
-import { Package, TrendingDown, AlertCircle, Search } from 'lucide-react';
-import { mockStock } from '../../data';
+import { Package, TrendingDown, AlertCircle, Search, Loader2 } from 'lucide-react';
+import { stockService } from '../../services/stockService';
 import { StockItem } from '../../types';
 
 type MovementType = 'entrada' | 'salida' | 'ajuste';
 
 export default function ControlStockPage() {
-    const [stock, setStock] = useState<StockItem[]>(mockStock);
+    const [stock, setStock] = useState<StockItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [showDialog, setShowDialog] = useState(false);
     const [selectedItem, setSelectedItem] = useState<StockItem | null>(null);
     const [movementType, setMovementType] = useState<MovementType>('entrada');
     const [quantity, setQuantity] = useState(0);
     const [notes, setNotes] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        loadStock();
+    }, []);
+
+    const loadStock = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const data = await stockService.getAll();
+            setStock(data);
+        } catch (err) {
+            console.error('Error cargando stock:', err);
+            setError('Error al cargar el stock. Verifique que el servidor esté funcionando.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const filteredStock = stock.filter(item =>
         item.nombre.toLowerCase().includes(searchTerm.toLowerCase())
@@ -32,28 +53,28 @@ export default function ControlStockPage() {
         setShowDialog(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!selectedItem || quantity <= 0) {
             alert('Ingrese una cantidad válida');
             return;
         }
 
-        setStock(stock.map(item => {
-            if (item.id === selectedItem.id) {
-                let newQuantity = item.cantidad;
-                if (movementType === 'entrada') {
-                    newQuantity += quantity;
-                } else if (movementType === 'salida') {
-                    newQuantity = Math.max(0, newQuantity - quantity);
-                } else {
-                    newQuantity = quantity;
-                }
-                return { ...item, cantidad: newQuantity };
-            }
-            return item;
-        }));
-
-        setShowDialog(false);
+        try {
+            setSaving(true);
+            const updated = await stockService.adjustStock(
+                selectedItem.id,
+                movementType,
+                quantity,
+                notes || undefined
+            );
+            setStock(stock.map(item => item.id === selectedItem.id ? updated : item));
+            setShowDialog(false);
+        } catch (err) {
+            console.error('Error ajustando stock:', err);
+            alert('Error al ajustar el stock');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const getStockStatus = (item: StockItem) => {

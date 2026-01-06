@@ -21,9 +21,13 @@ El objetivo principal es demostrar la arquitectura frontend, la lógica de negoc
 - **Base de Datos:** MySQL con esquema completo (usuarios, productos, mesas, pedidos, stock, promociones).
 - **Autenticación JWT:** Login funcional con tokens JWT y BCrypt para contraseñas.
 - **Datos Demo:** Carga automática de usuarios, productos y stock al iniciar el backend.
+- **Módulo Cocinero Refinado:** UI mejorada con consistencia visual, lógica de cancelación robusta (anti-bypass) y etiquetas claras.
+- **Gestión de Mesas:** Implementación del estado "Pagada" con diferenciación visual (color violeta) en Cliente y Cajero.
 
-### ⏳ Pendiente
-- **Integración de Datos:** Conectar las páginas del frontend (productos, stock, mesas) con los endpoints del backend. Actualmente usan datos mock locales.
+### ⏳ Pendiente / Próximos Pasos
+- **Integración de Datos:** Conectar Dashboard de Gerente con datos reales de ventas y stock.
+- **Sistema de Reseñas:** Módulo para que clientes dejen estrellas y comentarios.
+- **Corrección Pagos QR:** Solución de bugs en la notificación de pagos QR.
 
 ### 🚀 Para ejecutar el sistema completo:
 

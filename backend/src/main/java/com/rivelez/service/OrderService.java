@@ -27,6 +27,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final TableRepository tableRepository;
+    private final com.rivelez.repository.StockItemRepository stockItemRepository;
 
     private static final AtomicLong orderCounter = new AtomicLong(1);
 
@@ -180,20 +181,68 @@ public class OrderService {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
 
-        order.setEstado(nuevoEstado);
-
-        // Si el pedido se paga, liberar la mesa
-        if (nuevoEstado == OrderStatus.PAGADO) {
-            tableRepository.findByNumero(order.getNumeroMesa()).ifPresent(table -> {
-                table.setEstado(TableStatus.AVAILABLE);
-                table.setPedidoActualId(null);
-                table.setOcupantes(null);
-                table.setHoraInicio(null);
-                tableRepository.save(table);
-            });
+        // Lógica de descuento de stock: Solo cuando pasa a EN_PREPARACION y no estaba
+        // ya ahí
+        if (nuevoEstado == OrderStatus.EN_PREPARACION && order.getEstado() != OrderStatus.EN_PREPARACION) {
+            deductStockForOrder(order);
         }
 
+        order.setEstado(nuevoEstado);
+
+        // Si el pedido se paga, NO liberar la mesa automáticamente
+        // La mesa se libera explícitamente por el cliente o mozo
+        /*
+         * if (nuevoEstado == OrderStatus.PAGADO) {
+         * tableRepository.findByNumero(order.getNumeroMesa()).ifPresent(table -> {
+         * table.setEstado(TableStatus.AVAILABLE);
+         * table.setPedidoActualId(null);
+         * table.setOcupantes(null);
+         * table.setHoraInicio(null);
+         * tableRepository.save(table);
+         * });
+         * }
+         */
+
         return toDTO(orderRepository.save(order));
+    }
+
+    /**
+     * Descuenta stock de los ingredientes de los productos en la orden
+     */
+    private void deductStockForOrder(CustomerOrder order) {
+        for (OrderItem item : order.getItems()) {
+            // Obtener producto para ver sus ingredientes
+            productRepository.findById(item.getProducto().getId()).ifPresent(product -> {
+                String ingredientesStr = product.getIngredientes();
+                if (ingredientesStr != null && !ingredientesStr.isBlank()) {
+                    // Limpiar string de formato JSON simple o CSV: ["Tomate", "Queso"] -> Tomate,
+                    // Queso
+                    String cleanStr = ingredientesStr.replace("[", "").replace("]", "").replace("\"", "");
+                    String[] ingredientes = cleanStr.split(",");
+
+                    for (String ingNombre : ingredientes) {
+                        String nombreTrimmed = ingNombre.trim();
+                        // Buscar item de stock por nombre
+                        if (!nombreTrimmed.isEmpty()) {
+                            stockItemRepository.findByNombre(nombreTrimmed).ifPresent(stockItem -> {
+                                int cantidadADescontar = item.getCantidad(); // 1 unidad de stock por 1 unidad de
+                                                                             // producto
+                                int stockActual = stockItem.getCantidadActual();
+
+                                // Verificar stock (log warning only)
+                                if (stockActual < cantidadADescontar) {
+                                    System.out.println("ADVERTENCIA: Stock insuficiente para " + nombreTrimmed
+                                            + ". Pedido ID: " + order.getId());
+                                }
+
+                                stockItem.setCantidadActual(Math.max(0, stockActual - cantidadADescontar));
+                                stockItemRepository.save(stockItem);
+                            });
+                        }
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -204,6 +253,12 @@ public class OrderService {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
 
+        // Validar que el pedido esté listo o entregado antes de procesar pago
+        if (order.getEstado() != OrderStatus.LISTO && order.getEstado() != OrderStatus.ENTREGADO) {
+            throw new RuntimeException("El pedido debe estar listo o entregado para procesar el pago. Estado actual: "
+                    + order.getEstado());
+        }
+
         order.setMetodoPago(metodoPago);
         if (propina != null) {
             order.setPropina(propina);
@@ -211,14 +266,26 @@ public class OrderService {
         order.recalcularTotales();
         order.setEstado(OrderStatus.PAGADO);
 
-        // Liberar la mesa
+        // Actualizar estado de la mesa a PAGADA para indicar que ya pagaron pero no se
+        // han ido
         tableRepository.findByNumero(order.getNumeroMesa()).ifPresent(table -> {
-            table.setEstado(TableStatus.AVAILABLE);
-            table.setPedidoActualId(null);
-            table.setOcupantes(null);
-            table.setHoraInicio(null);
+            table.setEstado(TableStatus.PAGADA);
             tableRepository.save(table);
         });
+
+        return toDTO(orderRepository.save(order));
+    }
+
+    /**
+     * Marca un pedido como listo para pagar (cliente eligió método de pago)
+     */
+    @Transactional
+    public OrderDTO markReadyToPay(Long id, PaymentMethod metodoPago) {
+        CustomerOrder order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+
+        order.setListoParaPagar(true);
+        order.setMetodoPagoSolicitado(metodoPago);
 
         return toDTO(orderRepository.save(order));
     }
@@ -235,14 +302,29 @@ public class OrderService {
             throw new RuntimeException("No se puede cancelar un pedido pagado");
         }
 
-        // Liberar la mesa
-        tableRepository.findByNumero(order.getNumeroMesa()).ifPresent(table -> {
-            table.setEstado(TableStatus.AVAILABLE);
-            table.setPedidoActualId(null);
-            table.setOcupantes(null);
-            table.setHoraInicio(null);
-            tableRepository.save(table);
-        });
+        // Cambiar estado a CANCELADO (Soft Delete)
+        // NO liberar la mesa para permitir al cliente "editar" o hacer nuevo pedido
+        order.setEstado(OrderStatus.CANCELADO);
+        orderRepository.save(order);
+    }
+
+    /**
+     * Elimina definitivamente un pedido cancelado (Dismiss desde cocina)
+     */
+    @Transactional
+    public void dismissCancellation(Long id) {
+        CustomerOrder order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+
+        // Solo permitir borrar si está cancelado (u otros estados finales si se
+        // requiere limpieza)
+        if (order.getEstado() != OrderStatus.CANCELADO) {
+            throw new RuntimeException("Solo se pueden descartar pedidos cancelados");
+        }
+
+        // Aquí si liberamos recursos si fuera necesario, pero la mesa sigue ocupada por
+        // el cliente
+        // hasta que decida irse. Si el cliente ya se fue, el mozo libera la mesa.
 
         orderRepository.delete(order);
     }
@@ -265,6 +347,7 @@ public class OrderService {
                         .id(item.getId())
                         .productoId(item.getProducto() != null ? item.getProducto().getId() : null)
                         .nombreProducto(item.getNombreProducto())
+                        .imagenProducto(item.getProducto() != null ? item.getProducto().getImagen() : null)
                         .cantidad(item.getCantidad())
                         .precioUnitario(item.getPrecioUnitario())
                         .subtotal(item.getSubtotal())
@@ -283,6 +366,8 @@ public class OrderService {
                 .propina(order.getPropina())
                 .total(order.getTotal())
                 .metodoPago(order.getMetodoPago())
+                .listoParaPagar(order.getListoParaPagar())
+                .metodoPagoSolicitado(order.getMetodoPagoSolicitado())
                 .fechaCreacion(order.getFechaCreacion())
                 .fechaActualizacion(order.getFechaActualizacion())
                 .build();
