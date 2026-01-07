@@ -20,6 +20,7 @@ public class OrderItemDTO {
     private Long productoId;
     private String nombreProducto;
     private String imagenProducto; // Imagen del producto
+    private String categoriaProducto; // Categoría para filtrar bebidas en cocina
     private Integer cantidad;
     private BigDecimal precioUnitario;
     private BigDecimal subtotal;

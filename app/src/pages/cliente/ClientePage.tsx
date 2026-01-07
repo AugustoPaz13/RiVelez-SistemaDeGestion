@@ -257,10 +257,7 @@ export default function ClientePage() {
                     total={calcularTotal()}
                     fechaCreacionPedido={fechaCreacionPedido}
                     onVolverAlMenu={handleVolverAlMenu}
-                    onLiberarMesa={async () => {
-                        await handleReleaseTable();
-                        handleVolverAlMenu();
-                    }}
+                    onLiberarMesa={handleReleaseTable}
                 />
             )}
 

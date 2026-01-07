@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Servicio para gestión de pedidos
@@ -27,9 +28,36 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final TableRepository tableRepository;
+
     private final com.rivelez.repository.StockItemRepository stockItemRepository;
+    private final com.rivelez.repository.StockMovementRepository stockMovementRepository;
 
     private static final AtomicLong orderCounter = new AtomicLong(1);
+
+    @PostConstruct
+    public void initOrderCounter() {
+        orderRepository.findTopByOrderByIdDesc().ifPresent(order -> {
+            String numero = order.getNumeroPedido();
+            if (numero != null && numero.startsWith("PED-")) {
+                try {
+                    // Formato PED-yyyyMMdd-XXXX
+                    String[] parts = numero.split("-");
+                    if (parts.length == 3) {
+                        String datePart = parts[1];
+                        String dateNow = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+                        if (datePart.equals(dateNow)) {
+                            long lastSeq = Long.parseLong(parts[2]);
+                            orderCounter.set(lastSeq + 1);
+                            System.out.println("Contador de pedidos sincronizado desde BD: Siguiente=" + (lastSeq + 1));
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error sincronizando contador de pedidos: " + e.getMessage());
+                }
+            }
+        });
+    }
 
     /**
      * Obtiene todos los pedidos
@@ -111,7 +139,9 @@ public class OrderService {
                 .total(BigDecimal.ZERO)
                 .build();
 
-        // Agregar items
+        // Agregar items y verificar si son solo bebidas
+        boolean soloBebidasFlag = true;
+
         for (OrderItemRequest itemRequest : request.getItems()) {
             Product product = productRepository.findById(itemRequest.getProductoId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + itemRequest.getProductoId()));
@@ -125,21 +155,37 @@ public class OrderService {
                     .build();
 
             order.addItem(item);
+
+            // Verificar si el producto NO es bebida/alcohol
+            if (product.getCategoria() != ProductCategory.BEBIDA &&
+                    product.getCategoria() != ProductCategory.ALCOHOL) {
+                soloBebidasFlag = false;
+            }
         }
 
         order.recalcularTotales();
-        CustomerOrder saved = orderRepository.save(order);
+
+        // Si el pedido contiene SOLO bebidas, va directo a LISTO (no pasa por cocina)
+        if (soloBebidasFlag) {
+            order.setEstado(OrderStatus.LISTO);
+            System.out.println("Pedido #" + numeroPedido + " contiene solo bebidas - Estado: LISTO (no va a cocina)");
+        }
+
+        CustomerOrder savedOrder = orderRepository.save(order);
+
+        // Actualizar stock (Consumo)
+        updateStock(savedOrder, true);
 
         // Actualizar estado de la mesa
         tableRepository.findByNumero(request.getNumeroMesa()).ifPresent(table -> {
             table.setEstado(TableStatus.OCCUPIED);
-            table.setPedidoActualId(saved.getId());
+            table.setPedidoActualId(savedOrder.getId());
             table.setOcupantes(request.getPersonas());
             table.setHoraInicio(LocalDateTime.now());
             tableRepository.save(table);
         });
 
-        return toDTO(saved);
+        return toDTO(savedOrder);
     }
 
     /**
@@ -181,11 +227,11 @@ public class OrderService {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
 
-        // Lógica de descuento de stock: Solo cuando pasa a EN_PREPARACION y no estaba
-        // ya ahí
-        if (nuevoEstado == OrderStatus.EN_PREPARACION && order.getEstado() != OrderStatus.EN_PREPARACION) {
-            deductStockForOrder(order);
-        }
+        // Lógica de descuento de stock movida a createOrder
+        // if (nuevoEstado == OrderStatus.EN_PREPARACION && order.getEstado() !=
+        // OrderStatus.EN_PREPARACION) {
+        // deductStockForOrder(order);
+        // }
 
         order.setEstado(nuevoEstado);
 
@@ -204,45 +250,6 @@ public class OrderService {
          */
 
         return toDTO(orderRepository.save(order));
-    }
-
-    /**
-     * Descuenta stock de los ingredientes de los productos en la orden
-     */
-    private void deductStockForOrder(CustomerOrder order) {
-        for (OrderItem item : order.getItems()) {
-            // Obtener producto para ver sus ingredientes
-            productRepository.findById(item.getProducto().getId()).ifPresent(product -> {
-                String ingredientesStr = product.getIngredientes();
-                if (ingredientesStr != null && !ingredientesStr.isBlank()) {
-                    // Limpiar string de formato JSON simple o CSV: ["Tomate", "Queso"] -> Tomate,
-                    // Queso
-                    String cleanStr = ingredientesStr.replace("[", "").replace("]", "").replace("\"", "");
-                    String[] ingredientes = cleanStr.split(",");
-
-                    for (String ingNombre : ingredientes) {
-                        String nombreTrimmed = ingNombre.trim();
-                        // Buscar item de stock por nombre
-                        if (!nombreTrimmed.isEmpty()) {
-                            stockItemRepository.findByNombre(nombreTrimmed).ifPresent(stockItem -> {
-                                int cantidadADescontar = item.getCantidad(); // 1 unidad de stock por 1 unidad de
-                                                                             // producto
-                                int stockActual = stockItem.getCantidadActual();
-
-                                // Verificar stock (log warning only)
-                                if (stockActual < cantidadADescontar) {
-                                    System.out.println("ADVERTENCIA: Stock insuficiente para " + nombreTrimmed
-                                            + ". Pedido ID: " + order.getId());
-                                }
-
-                                stockItem.setCantidadActual(Math.max(0, stockActual - cantidadADescontar));
-                                stockItemRepository.save(stockItem);
-                            });
-                        }
-                    }
-                }
-            });
-        }
     }
 
     /**
@@ -298,13 +305,15 @@ public class OrderService {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
 
-        if (order.getEstado() == OrderStatus.PAGADO) {
-            throw new RuntimeException("No se puede cancelar un pedido pagado");
+        if (!canBeCancelled(order)) {
+            throw new RuntimeException("El pedido no puede ser cancelado en este estado");
         }
 
-        // Cambiar estado a CANCELADO (Soft Delete)
-        // NO liberar la mesa para permitir al cliente "editar" o hacer nuevo pedido
         order.setEstado(OrderStatus.CANCELADO);
+
+        // Restaurar stock
+        updateStock(order, false);
+
         orderRepository.save(order);
     }
 
@@ -348,6 +357,8 @@ public class OrderService {
                         .productoId(item.getProducto() != null ? item.getProducto().getId() : null)
                         .nombreProducto(item.getNombreProducto())
                         .imagenProducto(item.getProducto() != null ? item.getProducto().getImagen() : null)
+                        .categoriaProducto(
+                                item.getProducto() != null ? item.getProducto().getCategoria().toValue() : null)
                         .cantidad(item.getCantidad())
                         .precioUnitario(item.getPrecioUnitario())
                         .subtotal(item.getSubtotal())
@@ -371,5 +382,114 @@ public class OrderService {
                 .fechaCreacion(order.getFechaCreacion())
                 .fechaActualizacion(order.getFechaActualizacion())
                 .build();
+    }
+
+    private boolean canBeCancelled(CustomerOrder order) {
+        // Solo se puede cancelar si no está PAGADO, NI ENTREGADO
+        // Y si han pasado < 2 minutos (validado en frontend, aquí validamos estado)
+        // Opcional: Validar tiempo del servidor
+
+        return order.getEstado() != OrderStatus.PAGADO &&
+                order.getEstado() != OrderStatus.ENTREGADO &&
+                order.getEstado() != OrderStatus.CANCELADO;
+    }
+
+    private void updateStock(CustomerOrder order, boolean consume) {
+        for (OrderItem item : order.getItems()) {
+            Product product = item.getProducto();
+            if (product == null)
+                continue;
+
+            String ingredientesJson = product.getIngredientes();
+            if (ingredientesJson == null || ingredientesJson.isBlank()) {
+                // Fallback: intentar buscar por nombre del producto
+                stockItemRepository.findByNombre(product.getNombre()).ifPresent(stockItem -> {
+                    deductOrRestoreStock(stockItem, item.getCantidad(), consume, order.getNumeroPedido());
+                });
+                continue;
+            }
+
+            // Parsear ingredientes JSON: [{"nombre":"Lomo","cantidad":1},...]
+            try {
+                // Usamos un parsing simple sin dependencias externas
+                String cleaned = ingredientesJson.trim();
+                if (cleaned.startsWith("[") && cleaned.endsWith("]")) {
+                    cleaned = cleaned.substring(1, cleaned.length() - 1);
+                }
+
+                // Split por objetos JSON
+                String[] ingredientes = cleaned.split("\\},\\s*\\{");
+
+                for (String ingrediente : ingredientes) {
+                    // Limpiar y parsear cada ingrediente
+                    ingrediente = ingrediente.replace("{", "").replace("}", "").replace("\"", "");
+
+                    String nombreIngrediente = null;
+                    int cantidadIngrediente = 1;
+
+                    String[] props = ingrediente.split(",");
+                    for (String prop : props) {
+                        String[] kv = prop.split(":");
+                        if (kv.length == 2) {
+                            String key = kv[0].trim();
+                            String value = kv[1].trim();
+                            if (key.equals("nombre")) {
+                                nombreIngrediente = value;
+                            } else if (key.equals("cantidad")) {
+                                try {
+                                    cantidadIngrediente = Integer.parseInt(value);
+                                } catch (NumberFormatException e) {
+                                    cantidadIngrediente = 1;
+                                }
+                            }
+                        }
+                    }
+
+                    if (nombreIngrediente != null) {
+                        final String finalNombre = nombreIngrediente;
+                        final int finalCantidad = cantidadIngrediente * item.getCantidad();
+
+                        stockItemRepository.findByNombre(finalNombre).ifPresent(stockItem -> {
+                            deductOrRestoreStock(stockItem, finalCantidad, consume, order.getNumeroPedido());
+                        });
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println(
+                        "Error parseando ingredientes para producto " + product.getNombre() + ": " + e.getMessage());
+            }
+        }
+    }
+
+    private void deductOrRestoreStock(StockItem stockItem, int cantidad, boolean consume, String numeroPedido) {
+        int nuevaCantidad;
+        StockMovementType tipo;
+        String motivo;
+
+        if (consume) {
+            nuevaCantidad = stockItem.getCantidadActual() - cantidad;
+            tipo = StockMovementType.SALIDA;
+            motivo = "Venta Pedido #" + numeroPedido;
+            if (nuevaCantidad < 0) {
+                System.out.println("ADVERTENCIA: Stock negativo para " + stockItem.getNombre());
+            }
+        } else {
+            nuevaCantidad = stockItem.getCantidadActual() + cantidad;
+            tipo = StockMovementType.ENTRADA;
+            motivo = "Restauración (Cancelación) Pedido #" + numeroPedido;
+        }
+
+        stockItem.setCantidadActual(nuevaCantidad);
+        stockItemRepository.save(stockItem);
+
+        StockMovement movement = StockMovement.builder()
+                .item(stockItem)
+                .tipo(tipo)
+                .cantidad(cantidad)
+                .motivo(motivo)
+                .fecha(LocalDateTime.now())
+                .build();
+
+        stockMovementRepository.save(movement);
     }
 }

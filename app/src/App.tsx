@@ -16,6 +16,7 @@ import GestionMenuPage from './pages/gerente/GestionMenuPage';
 import ControlStockPage from './pages/gerente/ControlStockPage';
 import ReportesPage from './pages/gerente/ReportesPage';
 import PromocionesPage from './pages/gerente/PromocionesPage';
+import ResenasGerentePage from './pages/gerente/ResenasGerentePage';
 
 function AppRoutes() {
     const { authState } = useAuth();
@@ -123,6 +124,14 @@ function AppRoutes() {
                 element={
                     <ProtectedRoute allowedRoles={['gerente']}>
                         <PromocionesPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/gerente/resenas"
+                element={
+                    <ProtectedRoute allowedRoles={['gerente']}>
+                        <ResenasGerentePage />
                     </ProtectedRoute>
                 }
             />

@@ -13,6 +13,15 @@ interface ProductoVendido {
     ingresos: number;
 }
 
+interface UltimaVenta {
+    numeroPedido: string;
+    numeroMesa: number;
+    total: number;
+    metodoPago: string;
+    fecha: string;
+    cantidadItems: number;
+}
+
 export interface ReportSummary {
     // KPIs principales
     ventasTotales: number;
@@ -29,6 +38,7 @@ export interface ReportSummary {
     // Datos para gráficos
     ventasPorDia: VentaDiaria[];
     topProductos: ProductoVendido[];
+    ultimasVentas: UltimaVenta[];
     metodosPago: Record<string, number>;
 }
 

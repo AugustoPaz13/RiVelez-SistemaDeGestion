@@ -10,7 +10,8 @@ public enum PaymentMethod {
     TARJETA_DEBITO,
     TARJETA_CREDITO,
     TRANSFERENCIA,
-    QR;
+    QR,
+    OTRO;
 
     @JsonValue
     public String toValue() {

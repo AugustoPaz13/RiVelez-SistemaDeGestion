@@ -24,10 +24,14 @@ El objetivo principal es demostrar la arquitectura frontend, la lógica de negoc
 - **Módulo Cocinero Refinado:** UI mejorada con consistencia visual, lógica de cancelación robusta (anti-bypass) y etiquetas claras.
 - **Gestión de Mesas:** Implementación del estado "Pagada" con diferenciación visual (color violeta) en Cliente y Cajero.
 
-### ⏳ Pendiente / Próximos Pasos
-- **Integración de Datos:** Conectar Dashboard de Gerente con datos reales de ventas y stock.
-- **Sistema de Reseñas:** Módulo para que clientes dejen estrellas y comentarios.
-- **Corrección Pagos QR:** Solución de bugs en la notificación de pagos QR.
+- **Integración de Datos:** Dashboard de Gerente conectado con datos reales de ventas, ocupación y promedios.
+- **Sistema de Reseñas:** Módulo completo para feedback de clientes y panel de administración para gestión.
+- **Corrección Pagos QR:** Flujo validado con notificación correcta y manejo de errores.
+- **Persistencia Robusta:** Configuración de base de datos para retención de datos entre reinicios y sincronización automática de contadores.
+
+### ⏳ Próximos Pasos (Futuro)
+- **Integración con Hardware:** Impresoras de comandas y lectores de códigos de barras.
+- **App Móvil Nativa:** Versión compilada para tablets Android/iOS.
 
 ### 🚀 Para ejecutar el sistema completo:
 
@@ -56,8 +60,9 @@ Diseñado para la administración estratégica y operativa.
 - **Gestión de Usuarios:** Alta, baja y modificación de personal (Cajeros, Cocineros).
 - **Gestión de Menú:** Administración de productos, precios y categorías.
 - **Control de Stock:** Visualización de inventario.
-- **Reportes:** Dashboard con KPIs de ventas, ocupación y métricas de rendimiento.
+- **Reportes:** Dashboard con KPIs de ventas, ocupación y métricas de rendimiento con datos en tiempo real.
 - **Promociones:** Configuración de descuentos y ofertas especiales.
+- **Reseñas de Clientes:** Panel dedicado para visualizar feedback, filtrar por estrellas y monitorear la satisfacción general.
 
 ### 🏪 Módulo Cajero
 Orientado a la operación de salón.
@@ -75,6 +80,7 @@ Interfaz de autogestión para los comensales.
 - **Menú Digital:** Exploración de platos con imágenes y descripciones.
 - **Carrito de Compras:** Selección de productos y personalización.
 - **Seguimiento:** Visualización del estado del pedido en tiempo real.
+- **Feedback:** Posibilidad de calificar la experiencia y dejar comentarios al finalizar el pedido.
 
 ---
 

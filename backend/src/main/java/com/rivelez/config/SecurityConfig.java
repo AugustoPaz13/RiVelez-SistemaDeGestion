@@ -60,6 +60,9 @@ public class SecurityConfig {
                                                                                                                   // delete)
                         // Endpoints de promociones (lectura pública de activas)
                         .requestMatchers("/api/promotions/active").permitAll()
+                        // Endpoints de reseñas (público para clientes)
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/reviews").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reviews/**").permitAll()
                         // Endpoints protegidos por rol
                         .requestMatchers("/api/gerente/**").hasRole("GERENTE")
                         .requestMatchers("/api/cajero/**").hasAnyRole("GERENTE", "CAJERO")

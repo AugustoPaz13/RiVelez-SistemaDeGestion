@@ -3,7 +3,7 @@ import { Users, CreditCard, Banknote, Smartphone, QrCode } from 'lucide-react';
 
 interface TableCardProps {
     tableNumber: number;
-    status: 'available' | 'occupied' | 'reserved' | 'ready-to-pay';
+    status: 'available' | 'occupied' | 'reserved' | 'ready-to-pay' | 'pagada';
     guests?: number;
     total?: number;
     paymentMethod?: string;

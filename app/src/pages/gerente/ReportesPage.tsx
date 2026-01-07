@@ -240,35 +240,56 @@ export default function ReportesPage() {
                                 </Card>
                             </div>
 
-                            {/* Productos más vendidos */}
+                            {/* Últimas Ventas */}
                             <Card style={{ borderRadius: '1rem' }}>
                                 <CardHeader>
-                                    <CardTitle>Top 5 Productos Más Vendidos</CardTitle>
+                                    <CardTitle>Últimas Ventas</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div style={{ overflowX: 'auto' }}>
                                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                             <thead style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                                                 <tr>
-                                                    <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', fontSize: '0.875rem' }}>Producto</th>
-                                                    <th style={{ padding: '1rem', textAlign: 'right', fontWeight: '600', fontSize: '0.875rem' }}>Cantidad</th>
-                                                    <th style={{ padding: '1rem', textAlign: 'right', fontWeight: '600', fontSize: '0.875rem' }}>Ingresos</th>
+                                                    <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', fontSize: '0.875rem' }}>Pedido</th>
+                                                    <th style={{ padding: '1rem', textAlign: 'center', fontWeight: '600', fontSize: '0.875rem' }}>Mesa</th>
+                                                    <th style={{ padding: '1rem', textAlign: 'center', fontWeight: '600', fontSize: '0.875rem' }}>Items</th>
+                                                    <th style={{ padding: '1rem', textAlign: 'center', fontWeight: '600', fontSize: '0.875rem' }}>Método</th>
+                                                    <th style={{ padding: '1rem', textAlign: 'center', fontWeight: '600', fontSize: '0.875rem' }}>Fecha</th>
+                                                    <th style={{ padding: '1rem', textAlign: 'right', fontWeight: '600', fontSize: '0.875rem' }}>Total</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {report.topProductos.map((product, index) => (
+                                                {report.ultimasVentas && report.ultimasVentas.map((venta, index) => (
                                                     <tr key={index} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                                                        <td style={{ padding: '1rem', fontSize: '0.875rem' }}>{product.nombre}</td>
-                                                        <td style={{ padding: '1rem', textAlign: 'right', fontSize: '0.875rem' }}>{product.cantidad}</td>
+                                                        <td style={{ padding: '1rem', fontSize: '0.875rem', fontWeight: '500' }}>{venta.numeroPedido}</td>
+                                                        <td style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem' }}>{venta.numeroMesa}</td>
+                                                        <td style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem' }}>{venta.cantidadItems}</td>
+                                                        <td style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem' }}>
+                                                            <span style={{
+                                                                backgroundColor: venta.metodoPago === 'Efectivo' ? '#dcfce7' :
+                                                                    venta.metodoPago === 'Crédito' || venta.metodoPago === 'Débito' ? '#dbeafe' :
+                                                                        '#f3e8ff',
+                                                                color: venta.metodoPago === 'Efectivo' ? '#166534' :
+                                                                    venta.metodoPago === 'Crédito' || venta.metodoPago === 'Débito' ? '#1e40af' :
+                                                                        '#6b21a8',
+                                                                padding: '0.25rem 0.75rem',
+                                                                borderRadius: '9999px',
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: '500'
+                                                            }}>
+                                                                {venta.metodoPago || '-'}
+                                                            </span>
+                                                        </td>
+                                                        <td style={{ padding: '1rem', textAlign: 'center', fontSize: '0.875rem', color: '#6b7280' }}>{venta.fecha}</td>
                                                         <td style={{ padding: '1rem', textAlign: 'right', fontSize: '0.875rem', fontWeight: '600', color: '#0055A4' }}>
-                                                            {formatCurrency(product.ingresos)}
+                                                            {formatCurrency(venta.total)}
                                                         </td>
                                                     </tr>
                                                 ))}
-                                                {report.topProductos.length === 0 && (
+                                                {(!report.ultimasVentas || report.ultimasVentas.length === 0) && (
                                                     <tr>
-                                                        <td colSpan={3} style={{ padding: '2rem', textAlign: 'center', color: '#9ca3af' }}>
-                                                            No hay datos de ventas para este período
+                                                        <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: '#9ca3af' }}>
+                                                            No hay ventas registradas
                                                         </td>
                                                     </tr>
                                                 )}

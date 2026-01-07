@@ -7,6 +7,7 @@ interface OrderItemDTO {
     productoId: number;
     nombreProducto: string;
     imagenProducto?: string;
+    categoriaProducto?: string; // Para filtrar bebidas en cocina
     cantidad: number;
     precioUnitario: number;
     subtotal: number;
@@ -44,6 +45,7 @@ const mapOrderDTOToOrder = (dto: OrderDTO): Order => ({
         productoId: item.productoId.toString(),
         nombre: item.nombreProducto,
         imagen: item.imagenProducto,
+        categoria: item.categoriaProducto, // Añadido para filtrar
         cantidad: item.cantidad,
         precio: item.precioUnitario,
         observaciones: item.observaciones,
@@ -135,7 +137,7 @@ export const orderService = {
             'Efectivo': 'EFECTIVO',
             'Tarjeta': 'TARJETA_CREDITO',
             'Transferencia': 'TRANSFERENCIA',
-            'Código QR': 'OTRO',
+            'Código QR': 'QR',
         };
         const response = await api.post<OrderDTO>(`/orders/${id}/ready-to-pay`, {
             metodoPago: metodoPagoMap[metodoPago] || 'OTRO',

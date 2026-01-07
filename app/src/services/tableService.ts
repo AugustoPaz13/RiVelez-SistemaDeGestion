@@ -14,7 +14,8 @@ interface TableDTO {
 
 // Mapeo de backend a frontend
 const mapTableDTOToTable = (dto: TableDTO): Table => {
-    // Mapear estado de mayúsculas a minúsculas
+    // Mapear estado de backend (mayúsculas o minúsculas) a frontend (español)
+    const estadoUpper = dto.estado.toUpperCase();
     const statusMap: Record<string, TableStatus> = {
         'AVAILABLE': 'disponible',
         'OCCUPIED': 'ocupada',
@@ -26,7 +27,7 @@ const mapTableDTOToTable = (dto: TableDTO): Table => {
         id: dto.numero, // Usamos numero como id ya que el frontend usa number
         numero: dto.numero,
         capacidad: dto.capacidad,
-        estado: statusMap[dto.estado] || dto.estado.toLowerCase() as TableStatus,
+        estado: statusMap[estadoUpper] || 'disponible',
         ocupantes: dto.ocupantes || 0,
         pedidoActualId: dto.pedidoActualId?.toString(),
         horaInicio: dto.horaInicio || undefined,

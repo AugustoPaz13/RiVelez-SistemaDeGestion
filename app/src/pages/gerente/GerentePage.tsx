@@ -1,6 +1,6 @@
 import { Navbar } from '../../components/layout/Navbar';
 import { useNavigate } from 'react-router-dom';
-import { Users, UtensilsCrossed, Package, TrendingUp, Tag } from 'lucide-react';
+import { Users, UtensilsCrossed, Package, TrendingUp, Tag, MessageSquare } from 'lucide-react';
 
 export default function GerentePage() {
     const navigate = useNavigate();
@@ -10,7 +10,8 @@ export default function GerentePage() {
         { id: 'menu', name: 'Gestionar Menú', icon: UtensilsCrossed, path: '/gerente/menu', color: '#10b981', description: 'Editar platos y categorías' },
         { id: 'stock', name: 'Control de Stock', icon: Package, path: '/gerente/stock', color: '#f59e0b', description: 'Inventario y reposición' },
         { id: 'reportes', name: 'Reportes', icon: TrendingUp, path: '/gerente/reportes', color: '#8b5cf6', description: 'Estadísticas y análisis' },
-        { id: 'promociones', name: 'Promociones', icon: Tag, path: '/gerente/promociones', color: '#ec4899', description: 'Ofertas y descuentos' }
+        { id: 'promociones', name: 'Promociones', icon: Tag, path: '/gerente/promociones', color: '#ec4899', description: 'Ofertas y descuentos' },
+        { id: 'resenas', name: 'Reseñas de Clientes', icon: MessageSquare, path: '/gerente/resenas', color: '#06b6d4', description: 'Opiniones y calificaciones' }
     ];
 
     return (

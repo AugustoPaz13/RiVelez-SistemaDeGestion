@@ -3,6 +3,7 @@ import { CheckCircle2, Clock, ChefHat, AlertCircle, X, ShoppingBag, LogOut, Bank
 import { ItemCarrito, MetodoPago } from '../../types/restaurant';
 import { orderService } from '../../services/orderService';
 import { toast } from 'sonner';
+import { ReviewForm } from './ReviewForm';
 
 interface EstadoPedidoProps {
     orderId: string;
@@ -26,6 +27,9 @@ export function EstadoPedido({ orderId, numeroMesa, items, total, fechaCreacionP
     const [pedidoPagado, setPedidoPagado] = useState(false);
     const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState<MetodoPago | null>(null);
     const [procesandoPago, setProcesandoPago] = useState(false);
+    const [showReviewForm, setShowReviewForm] = useState(false);
+
+    const [reviewShown, setReviewShown] = useState(false);
 
     const metodosPago = [
         { id: 'efectivo' as MetodoPago, nombre: 'Efectivo', icon: Banknote, color: '#10b981' },
@@ -69,6 +73,16 @@ export function EstadoPedido({ orderId, numeroMesa, items, total, fechaCreacionP
 
                     if (nuevoEstado === 'pagado') {
                         setPedidoPagado(true);
+
+                        // Verificar si ya se mostró la reseña para este pedido
+                        const reviewKey = `review_shown_v2_${orderId}`;
+                        const alreadyShown = localStorage.getItem(reviewKey);
+
+                        if (!alreadyShown && !reviewShown) {
+                            setShowReviewForm(true);
+                            setReviewShown(true);
+                            localStorage.setItem(reviewKey, 'true');
+                        }
                     }
                 }
             } catch (error) {
@@ -479,6 +493,16 @@ export function EstadoPedido({ orderId, numeroMesa, items, total, fechaCreacionP
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Formulario de Reseña */}
+            {showReviewForm && (
+                <ReviewForm
+                    numeroMesa={numeroMesa}
+                    numeroPedido={orderId}
+                    onClose={() => setShowReviewForm(false)}
+                    onSubmitted={() => setShowReviewForm(false)}
+                />
             )}
         </div>
     );

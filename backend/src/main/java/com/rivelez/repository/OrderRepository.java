@@ -28,6 +28,8 @@ public interface OrderRepository extends JpaRepository<CustomerOrder, Long> {
 
     List<CustomerOrder> findByFechaCreacionBetween(LocalDateTime inicio, LocalDateTime fin);
 
+    Optional<CustomerOrder> findTopByOrderByIdDesc();
+
     @Query("SELECT o FROM CustomerOrder o WHERE o.estado NOT IN ('PAGADO') ORDER BY o.fechaCreacion DESC")
     List<CustomerOrder> findActiveOrders();
 

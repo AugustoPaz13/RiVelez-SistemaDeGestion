@@ -21,7 +21,7 @@ interface OrderItem {
 
 interface TableData {
     tableNumber: number;
-    status: 'available' | 'occupied' | 'reserved' | 'ready-to-pay';
+    status: 'available' | 'occupied' | 'reserved' | 'ready-to-pay' | 'pagada';
     guests?: number; // Ocupantes actuales
     capacity: number; // Capacidad total de la mesa
     items: OrderItem[];
@@ -59,11 +59,17 @@ export default function CajeroPage() {
                 // Buscar el pedido activo para esta mesa
                 const activeOrder = activeOrders.find(order => order.numeroMesa === table.numero);
 
-                // Determinar el estado de la mesa
-                let tableStatus: TableData['status'] = table.estado as 'available' | 'occupied' | 'reserved';
+                // Mapear estado de español a inglés para compatibilidad con TableCard
+                const statusMap: Record<string, TableData['status']> = {
+                    'disponible': 'available',
+                    'ocupada': 'occupied',
+                    'reservada': 'reserved',
+                    'pagada': 'pagada', // Mantener pagada para mostrar en morado
+                };
+                let tableStatus: TableData['status'] = statusMap[table.estado] || 'available';
 
                 // Si hay un pedido y el cliente está listo para pagar, cambiar a 'ready-to-pay'
-                if (activeOrder?.listoParaPagar && tableStatus === 'occupied') {
+                if (activeOrder?.listoParaPagar && (tableStatus === 'occupied')) {
                     tableStatus = 'ready-to-pay';
                 }
 
@@ -313,6 +319,7 @@ export default function CajeroPage() {
     const occupiedCount = tables.filter(t => t.status === 'occupied').length;
     const availableCount = tables.filter(t => t.status === 'available').length;
     const reservedCount = tables.filter(t => t.status === 'reserved').length;
+    const pagadaCount = tables.filter(t => t.status === 'pagada').length;
 
     const subtotal = selectedTable ? selectedTable.items.reduce((sum, item) => sum + (item.price * item.quantity), 0) : 0;
     const tax = subtotal * 0.1;
@@ -340,6 +347,9 @@ export default function CajeroPage() {
                                     </Badge>
                                     <Badge style={{ padding: '0.5rem 1rem', backgroundColor: 'rgba(239,68,68,0.1)', color: '#dc2626', border: '1px solid rgba(239,68,68,0.2)' }}>
                                         {occupiedCount} Ocupadas
+                                    </Badge>
+                                    <Badge style={{ padding: '0.5rem 1rem', backgroundColor: 'rgba(139,92,246,0.1)', color: '#7c3aed', border: '1px solid rgba(139,92,246,0.2)' }}>
+                                        {pagadaCount} Pagadas
                                     </Badge>
                                     <Badge style={{ padding: '0.5rem 1rem', backgroundColor: 'rgba(245,158,11,0.1)', color: '#d97706', border: '1px solid rgba(245,158,11,0.2)' }}>
                                         {reservedCount} Reservadas

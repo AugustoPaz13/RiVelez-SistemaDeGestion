@@ -103,65 +103,98 @@ public class DataLoader implements CommandLineRunner {
                         log.info("Cargando productos demo...");
 
                         // Entradas
-                        saveProduct("Empanadas (x3)", "Empanadas caseras de carne cortada a cuchillo", "3500",
+                        saveProductWithIngredients("Empanadas (x3)", "Empanadas caseras de carne cortada a cuchillo",
+                                        "3500",
                                         ProductCategory.ENTRADA,
-                                        "https://cuk-it.com/wp-content/uploads/2024/05/empanadas-carne-cuchillo-thumb.webp");
-                        saveProduct("Provoleta", "Queso provolone a la parrilla con orégano", "4200",
+                                        "https://cuk-it.com/wp-content/uploads/2024/05/empanadas-carne-cuchillo-thumb.webp",
+                                        "[{\"nombre\":\"Carne Vacuna\",\"cantidad\":1},{\"nombre\":\"Cebolla\",\"cantidad\":1},{\"nombre\":\"Huevos\",\"cantidad\":1},{\"nombre\":\"Aceitunas\",\"cantidad\":1},{\"nombre\":\"Morrón Rojo\",\"cantidad\":1},{\"nombre\":\"Tapas Empanadas\",\"cantidad\":3}]");
+
+                        saveProductWithIngredients("Provoleta", "Queso provolone a la parrilla con orégano", "4200",
                                         ProductCategory.ENTRADA,
-                                        "https://www.los-almendros.com.ar/shop/wp-content/uploads/Receta-recetas-locos-x-la-parrilla-locosxlaparrilla-receta-provoleta-parrilla-provoleta-parrilla-receta-provoleta-provoleta-752x477-1.jpg");
-                        saveProduct("Tabla de Fiambres", "Selección de jamón, queso y aceitunas", "5500",
+                                        "https://www.los-almendros.com.ar/shop/wp-content/uploads/Receta-recetas-locos-x-la-parrilla-locosxlaparrilla-receta-provoleta-parrilla-provoleta-parrilla-receta-provoleta-provoleta-752x477-1.jpg",
+                                        "[{\"nombre\":\"Queso Provolone\",\"cantidad\":1}]");
+
+                        saveProductWithIngredients("Tabla de Fiambres", "Selección de jamón, queso y aceitunas", "5500",
                                         ProductCategory.ENTRADA,
-                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYAIC1sSogmPPvaV0rF_NLhgyELN1CPOvTGw&s");
+                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYAIC1sSogmPPvaV0rF_NLhgyELN1CPOvTGw&s",
+                                        "[{\"nombre\":\"Jamón Crudo\",\"cantidad\":1},{\"nombre\":\"Jamón Cocido\",\"cantidad\":1},{\"nombre\":\"Salame\",\"cantidad\":1},{\"nombre\":\"Longaniza\",\"cantidad\":1},{\"nombre\":\"Queso Pategrás\",\"cantidad\":1},{\"nombre\":\"Queso Provolone\",\"cantidad\":1},{\"nombre\":\"Queso Azul\",\"cantidad\":1},{\"nombre\":\"Aceitunas\",\"cantidad\":1},{\"nombre\":\"Pan\",\"cantidad\":1}]");
 
                         // Platos Principales
-                        saveProduct("Bife de Chorizo", "Corte premium de 400g con guarnición a elección", "12500",
+                        saveProductWithIngredients("Bife de Chorizo", "Corte premium de 400g con guarnición a elección",
+                                        "12500",
                                         ProductCategory.PRINCIPAL,
-                                        "https://www.tasteatlas.com/images/dishes/913891c87f814c73aaa1aae404111922.jpg");
-                        saveProduct("Milanesa Napolitana", "Milanesa de ternera con jamón, queso y salsa", "9800",
+                                        "https://www.tasteatlas.com/images/dishes/913891c87f814c73aaa1aae404111922.jpg",
+                                        "[{\"nombre\":\"Lomo\",\"cantidad\":1}]");
+
+                        saveProductWithIngredients("Milanesa Napolitana",
+                                        "Milanesa de ternera con jamón, queso y salsa", "9800",
                                         ProductCategory.PRINCIPAL,
-                                        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Milanesa_napolitana_%281%29.jpg/330px-Milanesa_napolitana_%281%29.jpg");
-                        saveProduct("Pasta del Día", "Consultar variedad del día", "7500",
+                                        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Milanesa_napolitana_%281%29.jpg/330px-Milanesa_napolitana_%281%29.jpg",
+                                        "[{\"nombre\":\"Carne Vacuna\",\"cantidad\":1},{\"nombre\":\"Huevos\",\"cantidad\":2},{\"nombre\":\"Pan Rallado\",\"cantidad\":1},{\"nombre\":\"Ajo\",\"cantidad\":1},{\"nombre\":\"Perejil\",\"cantidad\":1},{\"nombre\":\"Queso Mozzarella\",\"cantidad\":1},{\"nombre\":\"Jamón Cocido\",\"cantidad\":1},{\"nombre\":\"Salsa de Tomate\",\"cantidad\":1},{\"nombre\":\"Aceite\",\"cantidad\":1}]");
+
+                        saveProductWithIngredients("Pasta del Día", "Consultar variedad del día", "7500",
                                         ProductCategory.PRINCIPAL,
-                                        "https://rebeccasinternationalkitchen.com/wp-content/uploads/2013/11/L9-1024x682.jpg");
-                        saveProduct("Suprema de Pollo", "Pechuga grillada con verduras salteadas", "8200",
+                                        "https://rebeccasinternationalkitchen.com/wp-content/uploads/2013/11/L9-1024x682.jpg",
+                                        "[{\"nombre\":\"Fideos Spaghetti\",\"cantidad\":1},{\"nombre\":\"Salsa de Tomate\",\"cantidad\":1}]");
+
+                        saveProductWithIngredients("Suprema de Pollo", "Pechuga grillada con verduras salteadas",
+                                        "8200",
                                         ProductCategory.PRINCIPAL,
-                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeVmLwF0CH99s1b2502IAWlkveF8_uOeLp_A&s");
+                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeVmLwF0CH99s1b2502IAWlkveF8_uOeLp_A&s",
+                                        "[{\"nombre\":\"Pollo\",\"cantidad\":1},{\"nombre\":\"Huevos\",\"cantidad\":2},{\"nombre\":\"Pan Rallado\",\"cantidad\":1},{\"nombre\":\"Ajo\",\"cantidad\":1},{\"nombre\":\"Perejil\",\"cantidad\":1},{\"nombre\":\"Aceite\",\"cantidad\":1}]");
 
                         // Postres
-                        saveProduct("Flan Casero", "Flan con dulce de leche y crema", "3200",
+                        saveProductWithIngredients("Flan Casero", "Flan con dulce de leche y crema", "3200",
                                         ProductCategory.POSTRE,
-                                        "https://argentina.gastronomia.com/media/cache/noticia_grande/uploads/noticias/flan.Q2g4U2VHTmRnV2lKaXJ5dC8vMTQ5OTkxNDg2OC8.jpg");
-                        saveProduct("Tiramisú", "Postre italiano con café y mascarpone", "4000",
-                                        ProductCategory.POSTRE,
-                                        "https://www.cucinare.tv/wp-content/uploads/2020/09/Tiramis%C3%BA-argentino-1579x850.jpg");
-                        saveProduct("Helado (3 bochas)", "Selección de sabores artesanales", "3500",
-                                        ProductCategory.POSTRE,
-                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTt8GtUHFMttsvU0K1iCzigKIan4fxZpZsV-Q&s");
+                                        "https://argentina.gastronomia.com/media/cache/noticia_grande/uploads/noticias/flan.Q2g4U2VHTmRnV2lKaXJ5dC8vMTQ5OTkxNDg2OC8.jpg",
+                                        "[{\"nombre\":\"Huevos\",\"cantidad\":3},{\"nombre\":\"Leche\",\"cantidad\":1},{\"nombre\":\"Azúcar\",\"cantidad\":1}]");
 
-                        // Bebidas
-                        saveProduct("Agua Mineral", "500ml con o sin gas", "1200",
+                        saveProductWithIngredients("Tiramisú", "Postre italiano con café y mascarpone", "4000",
+                                        ProductCategory.POSTRE,
+                                        "https://www.cucinare.tv/wp-content/uploads/2020/09/Tiramis%C3%BA-argentino-1579x850.jpg",
+                                        "[{\"nombre\":\"Queso Mascarpone\",\"cantidad\":1},{\"nombre\":\"Huevos\",\"cantidad\":2},{\"nombre\":\"Azúcar\",\"cantidad\":1},{\"nombre\":\"Café\",\"cantidad\":1},{\"nombre\":\"Vainillas\",\"cantidad\":6},{\"nombre\":\"Cacao\",\"cantidad\":1}]");
+
+                        saveProductWithIngredients("Helado (3 bochas)", "Selección de sabores artesanales", "3500",
+                                        ProductCategory.POSTRE,
+                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTt8GtUHFMttsvU0K1iCzigKIan4fxZpZsV-Q&s",
+                                        "[{\"nombre\":\"Helado\",\"cantidad\":1}]");
+
+                        // Bebidas (descontables directamente por nombre)
+                        saveProductWithIngredients("Agua Mineral", "500ml con o sin gas", "1200",
                                         ProductCategory.BEBIDA,
-                                        "https://statics.dinoonline.com.ar/imagenes/full_600x600_ma/3040004_f.jpg");
-                        saveProduct("Gaseosa", "Línea Coca-Cola 500ml", "1500",
+                                        "https://statics.dinoonline.com.ar/imagenes/full_600x600_ma/3040004_f.jpg",
+                                        "[{\"nombre\":\"Agua Mineral\",\"cantidad\":1}]");
+
+                        saveProductWithIngredients("Gaseosa", "Línea Coca-Cola 500ml", "1500",
                                         ProductCategory.BEBIDA,
-                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMFvfnPcgeowjERkPX7VvLyRZBuFRUs_flVQ&s");
-                        saveProduct("Jugo Natural", "Naranja o Pomelo exprimido", "2200",
+                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMFvfnPcgeowjERkPX7VvLyRZBuFRUs_flVQ&s",
+                                        "[{\"nombre\":\"Gaseosa\",\"cantidad\":1}]");
+
+                        saveProductWithIngredients("Jugo Natural", "Naranja o Pomelo exprimido", "2200",
                                         ProductCategory.BEBIDA,
-                                        "https://arcordiezb2c.vteximg.com.br/arquivos/ids/183684/JUGO-CEPITA-NARANJA-BOT-1-19938.jpg?v=638497641766170000");
-                        saveProduct("Café", "Espresso, cortado o con leche", "1800",
+                                        "https://arcordiezb2c.vteximg.com.br/arquivos/ids/183684/JUGO-CEPITA-NARANJA-BOT-1-19938.jpg?v=638497641766170000",
+                                        "[{\"nombre\":\"Jugo Natural\",\"cantidad\":1}]");
+
+                        saveProductWithIngredients("Café", "Espresso, cortado o con leche", "1800",
                                         ProductCategory.BEBIDA,
-                                        "https://img.freepik.com/vector-gratis/taza-realista-cafe-negro-elaborado-ilustracion-vector-platillo_1284-66002.jpg?semt=ais_hybrid&w=740&q=80");
+                                        "https://img.freepik.com/vector-gratis/taza-realista-cafe-negro-elaborado-ilustracion-vector-platillo_1284-66002.jpg?semt=ais_hybrid&w=740&q=80",
+                                        "[{\"nombre\":\"Café\",\"cantidad\":1}]");
 
                         // Bebidas Alcohólicas
-                        saveProduct("Cerveza Artesanal", "Pinta 500ml - Rubia, Roja o Negra", "3000",
+                        saveProductWithIngredients("Cerveza Artesanal", "Pinta 500ml - Rubia, Roja o Negra", "3000",
                                         ProductCategory.ALCOHOL,
-                                        "https://jumboargentina.vtexassets.com/arquivos/ids/433499-800-600?v=636517616933330000&width=800&height=600&aspect=true");
-                        saveProduct("Vino Malbec", "Copa de vino tinto Malbec", "2800",
+                                        "https://jumboargentina.vtexassets.com/arquivos/ids/433499-800-600?v=636517616933330000&width=800&height=600&aspect=true",
+                                        "[{\"nombre\":\"Cerveza Artesanal\",\"cantidad\":1}]");
+
+                        saveProductWithIngredients("Vino Malbec", "Copa de vino tinto Malbec", "2800",
                                         ProductCategory.ALCOHOL,
-                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTX9PH4rWcda7hMSlPhJfYWAdYj5FDQYA0CpQ&s");
-                        saveProduct("Fernet con Coca", "Trago clásico argentino", "3500",
+                                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTX9PH4rWcda7hMSlPhJfYWAdYj5FDQYA0CpQ&s",
+                                        "[{\"nombre\":\"Vino Malbec\",\"cantidad\":1}]");
+
+                        saveProductWithIngredients("Fernet con Coca", "Trago clásico argentino", "3500",
                                         ProductCategory.ALCOHOL,
-                                        "https://cdn.v2.tiendanegocio.com/gallery/18711/img_18711_18ef724f4e4.png");
+                                        "https://cdn.v2.tiendanegocio.com/gallery/18711/img_18711_18ef724f4e4.png",
+                                        "[{\"nombre\":\"Fernet\",\"cantidad\":1},{\"nombre\":\"Gaseosa\",\"cantidad\":1}]");
 
                         log.info("Productos demo creados exitosamente");
                 }
@@ -173,23 +206,75 @@ public class DataLoader implements CommandLineRunner {
                                 .imagen(imagen).disponible(true).build());
         }
 
+        private void saveProductWithIngredients(String nombre, String des, String precio, ProductCategory cat,
+                        String imagen, String ingredientes) {
+                productRepository.save(Product.builder()
+                                .nombre(nombre).descripcion(des).precio(new BigDecimal(precio)).categoria(cat)
+                                .imagen(imagen).disponible(true).ingredientes(ingredientes).build());
+        }
+
         private void loadStock() {
                 if (stockItemRepository.count() == 0) {
                         log.info("Cargando stock demo...");
-                        createStockItem("Lomo", 50, 10, "kg", new BigDecimal("8000"));
+
+                        // Carnes
+                        createStockItem("Carne Vacuna", 50, 10, "kg", new BigDecimal("8000"));
                         createStockItem("Pollo", 30, 5, "kg", new BigDecimal("4500"));
-                        createStockItem("Carne Picada", 20, 5, "kg", new BigDecimal("5000"));
-                        createStockItem("Papas", 100, 20, "kg", new BigDecimal("800"));
+                        createStockItem("Lomo", 30, 5, "kg", new BigDecimal("12000"));
+
+                        // Embutidos y Fiambres
+                        createStockItem("Jamón Crudo", 15, 3, "kg", new BigDecimal("15000"));
+                        createStockItem("Jamón Cocido", 15, 3, "kg", new BigDecimal("8000"));
+                        createStockItem("Salame", 10, 2, "kg", new BigDecimal("12000"));
+                        createStockItem("Longaniza", 10, 2, "kg", new BigDecimal("9000"));
+
+                        // Quesos
+                        createStockItem("Queso Provolone", 20, 5, "kg", new BigDecimal("8000"));
+                        createStockItem("Queso Mozzarella", 25, 5, "kg", new BigDecimal("6500"));
+                        createStockItem("Queso Pategrás", 10, 2, "kg", new BigDecimal("7000"));
+                        createStockItem("Queso Azul", 5, 1, "kg", new BigDecimal("12000"));
+                        createStockItem("Queso Mascarpone", 10, 2, "kg", new BigDecimal("10000"));
+
+                        // Verduras
                         createStockItem("Cebolla", 40, 10, "kg", new BigDecimal("600"));
                         createStockItem("Tomate", 30, 5, "kg", new BigDecimal("1200"));
+                        createStockItem("Morrón Rojo", 15, 3, "kg", new BigDecimal("2000"));
+                        createStockItem("Aceitunas", 20, 5, "kg", new BigDecimal("3000"));
                         createStockItem("Lechuga", 20, 5, "kg", new BigDecimal("1500"));
-                        createStockItem("Coca Cola 500ml", 120, 24, "unidad", new BigDecimal("800"));
-                        createStockItem("Agua Mineral", 100, 24, "unidad", new BigDecimal("600"));
-                        createStockItem("Cerveza Rubia", 60, 12, "litro", new BigDecimal("1800"));
-                        createStockItem("Harina 0000", 50, 10, "kg", new BigDecimal("900"));
-                        createStockItem("Huevos", 30, 6, "docena", new BigDecimal("1800"));
-                        createStockItem("Queso Mozzarella", 25, 5, "kg", new BigDecimal("6500"));
+                        createStockItem("Papas", 100, 20, "kg", new BigDecimal("800"));
+                        createStockItem("Ajo", 10, 2, "kg", new BigDecimal("3000"));
+                        createStockItem("Perejil", 5, 1, "kg", new BigDecimal("2000"));
+
+                        // Lácteos y Huevos
+                        createStockItem("Huevos", 50, 12, "unidad", new BigDecimal("150"));
+                        createStockItem("Leche", 30, 6, "litro", new BigDecimal("800"));
+
+                        // Panadería y Pastas
+                        createStockItem("Pan Rallado", 20, 5, "kg", new BigDecimal("1500"));
                         createStockItem("Pan", 40, 10, "kg", new BigDecimal("1200"));
+                        createStockItem("Tapas Empanadas", 100, 20, "unidad", new BigDecimal("100"));
+                        createStockItem("Fideos Spaghetti", 30, 5, "kg", new BigDecimal("1000"));
+                        createStockItem("Vainillas", 50, 10, "unidad", new BigDecimal("50"));
+                        createStockItem("Harina", 50, 10, "kg", new BigDecimal("900"));
+
+                        // Salsas y Condimentos
+                        createStockItem("Salsa de Tomate", 30, 5, "kg", new BigDecimal("1200"));
+                        createStockItem("Aceite", 20, 5, "litro", new BigDecimal("2000"));
+                        createStockItem("Azúcar", 30, 5, "kg", new BigDecimal("800"));
+                        createStockItem("Café", 10, 2, "kg", new BigDecimal("8000"));
+                        createStockItem("Cacao", 5, 1, "kg", new BigDecimal("5000"));
+
+                        // Bebidas
+                        createStockItem("Gaseosa", 120, 24, "unidad", new BigDecimal("800"));
+                        createStockItem("Agua Mineral", 100, 24, "unidad", new BigDecimal("600"));
+                        createStockItem("Jugo Natural", 50, 10, "unidad", new BigDecimal("1000"));
+                        createStockItem("Cerveza Artesanal", 60, 12, "unidad", new BigDecimal("1800"));
+                        createStockItem("Vino Malbec", 30, 6, "unidad", new BigDecimal("3500"));
+                        createStockItem("Fernet", 20, 4, "unidad", new BigDecimal("4000"));
+
+                        // Helados
+                        createStockItem("Helado", 40, 10, "kg", new BigDecimal("3000"));
+
                         log.info("Stock demo cargado exitosamente");
                 }
         }

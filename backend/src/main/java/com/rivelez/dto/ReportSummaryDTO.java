@@ -33,6 +33,7 @@ public class ReportSummaryDTO {
     // Datos para gráficos
     private List<VentaDiaria> ventasPorDia;
     private List<ProductoVendido> topProductos;
+    private List<UltimaVenta> ultimasVentas;
     private Map<String, Double> metodosPago;
 
     @Data
@@ -53,5 +54,18 @@ public class ReportSummaryDTO {
         private String nombre;
         private Long cantidad;
         private BigDecimal ingresos;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UltimaVenta {
+        private String numeroPedido;
+        private Integer numeroMesa;
+        private BigDecimal total;
+        private String metodoPago;
+        private String fecha;
+        private Integer cantidadItems;
     }
 }

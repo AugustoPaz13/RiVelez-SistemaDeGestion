@@ -6,6 +6,7 @@ C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas 
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\controller\OrderController.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\repository\TableRepository.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\config\SecurityConfig.java
+C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\controller\ReviewController.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\dto\AuthResponse.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\entity\User.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\controller\StockController.java
@@ -43,6 +44,7 @@ C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas 
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\dto\StockItemDTO.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\controller\HealthController.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\repository\ProductRepository.java
+C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\service\ReviewService.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\repository\UserRepository.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\repository\PromotionRepository.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\entity\Promotion.java
@@ -52,13 +54,16 @@ C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas 
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\entity\TableStatus.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\dto\RegisterRequest.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\service\OrderService.java
+C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\entity\Review.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\service\PromotionService.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\controller\DebugController.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\dto\LoginRequest.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\entity\RestaurantTable.java
+C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\dto\ReviewDTO.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\dto\UserDTO.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\controller\TableController.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\dto\OrderItemRequest.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\entity\CustomerOrder.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\dto\ProductRequest.java
+C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\repository\ReviewRepository.java
 C:\Users\Augusto\Desktop\Facultad\2. Segundo Año\Segundo Cuatrimestre\Sistemas II\Rivelez\Sistema\backend\src\main\java\com\rivelez\repository\StockItemRepository.java

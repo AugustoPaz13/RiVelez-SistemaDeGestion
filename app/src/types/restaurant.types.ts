@@ -18,6 +18,7 @@ export interface OrderItem {
     productoId: string;
     nombre: string;
     imagen?: string;
+    categoria?: string; // Para filtrar bebidas en cocina
     cantidad: number;
     precio: number;
     observaciones?: string;

@@ -32,6 +32,12 @@ const mapOrderToKitchenOrder = (order: Order): KitchenOrder => {
     const now = new Date();
     const canBeCancelled = now < cancellationDeadline && (order.estado === 'nuevo' || order.estado === 'recibido');
 
+    // Filtrar bebidas: el cocinero no necesita ver bebidas/alcohol
+    const foodItems = order.items.filter(item => {
+        const categoria = item.categoria?.toLowerCase();
+        return categoria !== 'bebida' && categoria !== 'alcohol';
+    });
+
     return {
         id: order.numeroPedido,
         tableNumber: order.numeroMesa,
@@ -42,7 +48,7 @@ const mapOrderToKitchenOrder = (order: Order): KitchenOrder => {
         canBeCancelled,
         cancellationDeadline: cancellationDeadline.toISOString(),
         people: order.personas,
-        items: order.items.map(item => ({
+        items: foodItems.map(item => ({
             id: item.id,
             name: item.nombre,
             quantity: item.cantidad,

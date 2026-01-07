@@ -7,7 +7,9 @@ import com.rivelez.entity.CustomerOrder;
 import com.rivelez.entity.OrderItem;
 import com.rivelez.entity.OrderStatus;
 import com.rivelez.entity.PaymentMethod;
+import com.rivelez.entity.TableStatus;
 import com.rivelez.repository.OrderRepository;
+import com.rivelez.repository.TableRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 public class ReportService {
 
     private final OrderRepository orderRepository;
+    private final TableRepository tableRepository;
 
     /**
      * Obtiene resumen de reportes para los últimos N días
@@ -78,20 +81,27 @@ public class ReportService {
         // Top productos
         List<ProductoVendido> topProductos = calcularTopProductos(pedidosActuales, 5);
 
+        // Últimas ventas
+        List<ReportSummaryDTO.UltimaVenta> ultimasVentas = calcularUltimasVentas(10);
+
         // Métodos de pago
         Map<String, Double> metodosPago = calcularMetodosPago(pedidosActuales);
+
+        // Ocupación actual (mesas no disponibles / total mesas * 100)
+        double ocupacionActual = calcularOcupacionActual();
 
         return ReportSummaryDTO.builder()
                 .ventasTotales(ventasTotales)
                 .totalPedidos(totalPedidos)
                 .ticketPromedio(ticketPromedio)
-                .ocupacionPromedio(78.0) // Placeholder - requiere tracking de mesas
+                .ocupacionPromedio(ocupacionActual)
                 .ventasCambio(ventasCambio)
                 .pedidosCambio(pedidosCambio)
                 .ticketCambio(ticketCambio)
-                .ocupacionCambio(5.2) // Placeholder
+                .ocupacionCambio(0.0) // Requiere histórico para comparar
                 .ventasPorDia(ventasPorDia)
                 .topProductos(topProductos)
+                .ultimasVentas(ultimasVentas)
                 .metodosPago(metodosPago)
                 .build();
     }
@@ -178,11 +188,60 @@ public class ReportService {
                     case TARJETA_CREDITO -> "Crédito";
                     case TRANSFERENCIA -> "Transferencia";
                     case QR -> "QR";
+                    case OTRO -> "Otro";
+                    default -> "Otro";
                 };
                 resultado.put(nombre, (entry.getValue() * 100.0) / total);
             }
         }
 
         return resultado;
+    }
+
+    private List<ReportSummaryDTO.UltimaVenta> calcularUltimasVentas(int limit) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM HH:mm");
+
+        // Obtener pedidos pagados ordenados por fecha descendente
+        return orderRepository.findAll().stream()
+                .filter(o -> o.getEstado() == OrderStatus.PAGADO)
+                .sorted((a, b) -> b.getFechaCreacion().compareTo(a.getFechaCreacion()))
+                .limit(limit)
+                .map(order -> {
+                    String metodoPagoNombre = "";
+                    if (order.getMetodoPago() != null) {
+                        metodoPagoNombre = switch (order.getMetodoPago()) {
+                            case EFECTIVO -> "Efectivo";
+                            case TARJETA_DEBITO -> "Débito";
+                            case TARJETA_CREDITO -> "Crédito";
+                            case TRANSFERENCIA -> "Transferencia";
+                            case QR -> "QR";
+                            case OTRO -> "Otro";
+                            default -> "Otro";
+                        };
+                    }
+
+                    return ReportSummaryDTO.UltimaVenta.builder()
+                            .numeroPedido(order.getNumeroPedido())
+                            .numeroMesa(order.getNumeroMesa())
+                            .total(order.getTotal())
+                            .metodoPago(metodoPagoNombre)
+                            .fecha(order.getFechaCreacion().format(formatter))
+                            .cantidadItems(order.getItems() != null ? order.getItems().size() : 0)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    private double calcularOcupacionActual() {
+        var mesas = tableRepository.findAll();
+        if (mesas.isEmpty()) {
+            return 0.0;
+        }
+
+        long mesasOcupadas = mesas.stream()
+                .filter(m -> m.getEstado() != TableStatus.AVAILABLE)
+                .count();
+
+        return (mesasOcupadas * 100.0) / mesas.size();
     }
 }
