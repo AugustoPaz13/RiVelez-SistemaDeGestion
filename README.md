@@ -32,6 +32,7 @@ El objetivo principal es demostrar la arquitectura frontend, la lógica de negoc
 ### ⏳ Próximos Pasos (Futuro)
 - **Integración con Hardware:** Impresoras de comandas y lectores de códigos de barras.
 - **App Móvil Nativa:** Versión compilada para tablets Android/iOS.
+- **Despliegue en la Nube:** Alojamiento de Backend y Base de Datos en servidores cloud (AWS/Render) para acceso remoto.
 
 ### 🚀 Para ejecutar el sistema completo:
 

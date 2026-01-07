@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navbar } from '../../components/layout/Navbar';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Card, CardContent } from '../../components/ui/card';
 import { Star, MessageSquare, Loader2, Filter } from 'lucide-react';
 import { reviewService, ReviewDTO, ReviewStats } from '../../services/reviewService';
 
