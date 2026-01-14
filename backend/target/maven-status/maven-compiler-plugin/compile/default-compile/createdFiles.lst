@@ -4,9 +4,11 @@ com\rivelez\repository\OrderRepository.class
 com\rivelez\dto\TableDTO.class
 com\rivelez\entity\TableStatus.class
 com\rivelez\config\SecurityConfig.class
+com\rivelez\dto\ReportSummaryDTO$UltimaVenta.class
 com\rivelez\entity\OrderStatus.class
 com\rivelez\entity\ProductCategory.class
 com\rivelez\entity\StockMovement.class
+com\rivelez\entity\Review.class
 com\rivelez\controller\AuthController.class
 com\rivelez\dto\TableDTO$TableDTOBuilder.class
 com\rivelez\service\CustomUserDetailsService.class
@@ -19,6 +21,7 @@ com\rivelez\config\DataLoader.class
 com\rivelez\security\JwtService.class
 com\rivelez\dto\StockItemDTO$StockItemDTOBuilder.class
 com\rivelez\repository\ProductRepository.class
+com\rivelez\dto\ReviewDTO$ReviewDTOBuilder.class
 com\rivelez\dto\OrderItemDTO.class
 com\rivelez\service\ReportService.class
 com\rivelez\dto\LoginRequest.class
@@ -27,7 +30,9 @@ com\rivelez\dto\OrderDTO$OrderDTOBuilder.class
 com\rivelez\entity\OrderItem.class
 com\rivelez\dto\ReportSummaryDTO$ProductoVendido$ProductoVendidoBuilder.class
 com\rivelez\entity\RestaurantTable$RestaurantTableBuilder.class
+com\rivelez\dto\ReportSummaryDTO$UltimaVenta$UltimaVentaBuilder.class
 com\rivelez\security\JwtAuthenticationFilter.class
+com\rivelez\dto\ReviewDTO.class
 com\rivelez\service\AuthService.class
 com\rivelez\entity\Promotion$PromotionBuilder.class
 com\rivelez\dto\RegisterRequest.class
@@ -55,6 +60,7 @@ com\rivelez\service\StockService.class
 com\rivelez\controller\ProductController.class
 com\rivelez\dto\ReportSummaryDTO$ProductoVendido.class
 com\rivelez\dto\AuthResponse$AuthResponseBuilder.class
+com\rivelez\controller\ReviewController.class
 com\rivelez\dto\ReportSummaryDTO$VentaDiaria$VentaDiariaBuilder.class
 com\rivelez\dto\PromotionDTO$PromotionDTOBuilder.class
 com\rivelez\entity\RestaurantTable.class
@@ -66,6 +72,7 @@ com\rivelez\dto\CreatePromotionRequest.class
 com\rivelez\dto\OrderItemDTO$OrderItemDTOBuilder.class
 com\rivelez\dto\UserDTO$UserDTOBuilder.class
 com\rivelez\dto\OrderItemRequest.class
+com\rivelez\entity\Review$ReviewBuilder.class
 com\rivelez\entity\User$UserBuilder.class
 com\rivelez\service\ProductService$1.class
 com\rivelez\entity\PaymentMethod.class
@@ -76,14 +83,17 @@ com\rivelez\controller\StockController.class
 com\rivelez\dto\OrderDTO.class
 com\rivelez\dto\ProductRequest.class
 com\rivelez\service\PromotionService.class
+com\rivelez\repository\ReviewRepository.class
 com\rivelez\service\ProductService.class
 com\rivelez\repository\PromotionRepository.class
 com\rivelez\dto\ProductDTO$ProductDTOBuilder.class
 com\rivelez\repository\TableRepository.class
 com\rivelez\dto\CreateStockItemRequest.class
 com\rivelez\entity\StockItem$StockItemBuilder.class
+com\rivelez\service\ReviewService.class
 com\rivelez\dto\ReportSummaryDTO$ReportSummaryDTOBuilder.class
 com\rivelez\controller\ReportController.class
 com\rivelez\dto\StockItemDTO.class
 com\rivelez\repository\OrderItemRepository.class
 com\rivelez\controller\TableController.class
+com\rivelez\controller\SpaController.class

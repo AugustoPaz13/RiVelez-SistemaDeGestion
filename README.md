@@ -99,28 +99,62 @@ Interfaz de autogestión para los comensales.
 
 ---
 
-## 📦 Instalación y Ejecución Local
+## 🌐 Acceso Online (Demo)
 
-Para ejecutar el proyecto en su entorno local:
+¡No es necesario instalar nada para usar el sistema!
+Puede acceder a la versión desplegada en la nube acá:
+� **[]**
 
-1.  **Pre-requisitos:** Asegúrese de tener instalado Node.js (v18 o superior).
-2.  **Clonar el repositorio:**
-    (Paso omitido si ya tiene los archivos)
-3.  **Instalar dependencias:**
+---
+
+## 💻 Instalación y Ejecución Local (Para Desarrolladores)
+
+Si desea descargar el código y ejecutarlo en su propia computadora:
+
+### Opción 1: Ejecución Monolítica (Recomendada)
+Esta opción ejecuta el Frontend y Backend juntos en el mismo servidor (puerto 8080), simulando un entorno de producción.
+
+1.  **Ejecutar Script de Inicio:**
+    En la raíz del proyecto, ejecutar con PowerShell:
+    ```powershell
+    .\run_monolith_local.ps1
+    ```
+    Esto construirá el frontend, lo copiará al backend y ejecutará el servidor.
+    
+    El sistema estará disponible en `http://localhost:8080`.
+
+### Opción 2: Ejecución Separada (Desarrollo)
+Para desarrollar y tener recarga en caliente (HMR).
+
+1.  **Terminal 1 - Backend:**
+    ```bash
+    cd backend
+    .\mvnw.cmd spring-boot:run
+    ```
+
+2.  **Terminal 2 - Frontend:**
     ```bash
     cd app
-    npm install
-    ```
-4.  **Iniciar servidor de desarrollo:**
-    ```bash
     npm run dev
     ```
-    El sistema estará disponible en `http://localhost`.
+    Acceder a `http://localhost:5173`.
 
-5.  **Compilar para producción:**
-    ```bash
-    npm run build
-    ```
+---
+
+## ☁️ Despliegue (Deployment)
+
+El proyecto está configurado para desplegarse como un **Monolito Dockerizado** (Frontend servido por Spring Boot).
+
+### Pasos Rápidos para Railway:
+1.  Subir el repositorio a GitHub.
+2.  Crear proyecto en [Railway](https://railway.app/) desde GitHub.
+3.  Agregar base de datos MySQL en Railway.
+4.  Configurar variables de entorno en el servicio del backend:
+    -   `DB_URL`: `jdbc:mysql://${{MySQL.MYSQLHOST}}:${{MySQL.MYSQLPORT}}/${{MySQL.MYSQLDATABASE}}`
+    -   `DB_USER`: `${{MySQL.MYSQLUSER}}`
+    -   `DB_PASSWORD`: `${{MySQL.MYSQLPASSWORD}}`
+    -   `PORT`: `8080`
+5.  Railway detectará el `Dockerfile` y desplegará la aplicación completa.
 
 ---
 

@@ -38,6 +38,9 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        // Recursos estáticos frontend (Monolito)
+                        .requestMatchers("/", "/index.html", "/assets/**", "/vite.svg", "/*.ico", "/*.json", "/*.png")
+                        .permitAll()
                         // Endpoints públicos
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/health").permitAll()
@@ -69,6 +72,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/cocinero/**").hasAnyRole("GERENTE", "COCINERO")
                         .requestMatchers("/api/cliente/**").hasAnyRole("GERENTE", "CAJERO", "COCINERO", "CLIENTE")
                         .requestMatchers("/api/stock/**").hasAnyRole("GERENTE", "COCINERO")
+                        // Rutas de React Router (SPA) - Permitir acceso para que el index.html las
+                        // maneje
+                        .requestMatchers("/login", "/admin/**", "/cocina", "/cajero", "/menu").permitAll()
                         // Todo lo demás requiere autenticación
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
