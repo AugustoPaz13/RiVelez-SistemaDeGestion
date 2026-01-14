@@ -102,8 +102,8 @@ Interfaz de autogestión para los comensales.
 ## 🌐 Acceso Online (Demo)
 
 ¡No es necesario instalar nada para usar el sistema!
-Puede acceder a la versión desplegada en la nube acá:
-� **[]**
+Puede acceder a la versión desplegada en la nube aquí:
+👉 **[https://restaurante-rivelez.onrender.com/#/login]** 
 
 ---
 
@@ -145,16 +145,12 @@ Para desarrollar y tener recarga en caliente (HMR).
 
 El proyecto está configurado para desplegarse como un **Monolito Dockerizado** (Frontend servido por Spring Boot).
 
-### Pasos Rápidos para Railway:
-1.  Subir el repositorio a GitHub.
-2.  Crear proyecto en [Railway](https://railway.app/) desde GitHub.
-3.  Agregar base de datos MySQL en Railway.
-4.  Configurar variables de entorno en el servicio del backend:
-    -   `DB_URL`: `jdbc:mysql://${{MySQL.MYSQLHOST}}:${{MySQL.MYSQLPORT}}/${{MySQL.MYSQLDATABASE}}`
-    -   `DB_USER`: `${{MySQL.MYSQLUSER}}`
-    -   `DB_PASSWORD`: `${{MySQL.MYSQLPASSWORD}}`
-    -   `PORT`: `8080`
-5.  Railway detectará el `Dockerfile` y desplegará la aplicación completa.
+### Infraestructura en la Nube
+Actualmente desplegado utilizando:
+- **Render:** Alojamiento de la aplicación (Frontend + Backend Dockerizados).
+- **Aiven:** Base de datos MySQL gestionada (Free Tier).
+
+Para ver los pasos de despliegue detallados o replicar el entorno, consultar el archivo [`DEPLOYMENT.md`](./DEPLOYMENT.md).
 
 ---
 

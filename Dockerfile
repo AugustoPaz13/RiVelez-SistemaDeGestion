@@ -19,5 +19,7 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=backend-build /backend/target/*.jar app.jar
+# Limitar memoria para que no explote en la capa gratuita (Max 350MB de RAM para Java)
+ENV JAVA_TOOL_OPTIONS "-Xmx350m -Xms128m"
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
